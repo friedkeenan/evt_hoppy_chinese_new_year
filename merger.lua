@@ -20,7 +20,14 @@ local fileList = {
     [8] = "sound",
     [9] = "character",
     [10] = "definitions",
-    [11] = "events",
+    [11] = {
+        path = "events",
+        files = {
+            "newGame",
+            "time",
+            "presence"
+        }
+    },
     [12] = "start"
 }
 

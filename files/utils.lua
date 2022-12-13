@@ -97,29 +97,29 @@ table.randomize = function(tbl)
     return newTable
 end
 
-table.unreference = function(tbl)
-	local retvl
+table.unreference = function(t)
+	local ut
 
-	if type(tbl) == "table" then
-		retvl = {}
-		for k, v in next, tbl do
-			retvl[table.unreference(k)] = table.unreference(v)
+	if type(t) == "table" then
+		ut = {}
+		for k, v in next, t do
+			ut[table.unreference(k)] = table.unreference(v)
 		end
-		setmetatable(retvl, getmetatable(tbl))
+		setmetatable(ut, getmetatable(t))
 	else
-		retvl = tbl
+		ut = t
 	end
 
-	return retvl
+	return ut
 end
 
-table.inherit = function(tbl, ex)
+table.inherit = function(t, ex)
 	local obj
 
-	if type(tbl) ~= "table" then
+	if type(t) ~= "table" then
 		obj = {}
 	else
-        obj = table.unreference(tbl)
+        obj = table.unreference(t)
     end
 
 	for k, v in next, ex do
@@ -204,7 +204,7 @@ function Timer.new(awaitTime, loop, callback, ...)
 
     Timer.list[self.uniqueId] = self
 
-    return self.uniqueId--timersList[self.uniqueId]
+    return self.uniqueId
 end
 
 function Timer:renew()
