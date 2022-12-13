@@ -40,14 +40,14 @@ translate = function(resource, language, gender, _format)
 				local t = {}
 				
 				for index, val in next, obj do
-					t[index] = (type(val) == "string" and stringutils.getGendered(val, gender) or val)
+					t[index] = (type(val) == "string" and utils.getGendered(val, gender) or val)
 				end
 				
 				return t
 			end
 		else
 			if gender and obj:find("%(.-%)") then
-				obj = stringutils.getGendered(obj, gender)
+				obj = utils.getGendered(obj, gender)
 			end
 			
 			if type(_format) == "table" then
