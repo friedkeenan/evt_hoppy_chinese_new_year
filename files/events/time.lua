@@ -2,6 +2,7 @@ function eventLoop(elapsed, remaining)
 	Timer.handle()
 	
 	for playerName, player in next, playerList do
+		print(player)
 		local obj = tfm.get.room.playerList[playerName]
 		if obj then
 			player:updatePosition(obj.x, obj.y, obj.vx, obj.vy)
@@ -14,6 +15,7 @@ function eventLoop(elapsed, remaining)
 		if debugMode then
 			if remaining > (timeMargin - 750) then
 				tfm.exec.chatMessage("<R>WARNING !</R> <J>The event is on <r><b>debugMode</b></R>!!</J>")
+			end
 		else
 			if not noTimeLeft then
 				for playerName, player in next, playerList do

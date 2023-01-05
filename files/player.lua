@@ -1,34 +1,42 @@
-function Player.new(name)
-    local self = setmetatable({}, Player)
-    self.name = name
-    self.progress = {}
-
-	local tfmd = tfm.get.room.playerList[name]
-
-	self.language = tfmd.language or tfmd.community
-	self.gender = tfmd.gender
-
-	self.isFacingRight = true
-	self.isMoving = false
-
-	self.latency = 0
-
-	self.vignetteId = -1
-
-	self.keys = {}
-
-	do
-		tfm.exec.lowerSyncDelay(self.name)
+function Player:new(playerName)
+	local info = tfm.get.room.playerList[playerName]
+    local this = setmetatable({
+		name = playerName,
 		
-		for keyId, _ in next, playerKeys do
-			system.bindKeyboard(self.name, keyId, true, true)
-			system.bindKeyboard(self.name, keyId, false, true)
-			self.keys[keyId] = false
+		x = 0,
+		y = 0,
+		vx = 0,
+		vy = 0,
+		
+		progress = {},
+		
+		language = info.language,
+		gender = info.gender,
+		
+		isFacingRight = true,
+		isMoving = false,
+		
+		latency = 0,
+		
+		keys = {},
+		
+		items = {}
+	}, self)
+	
+	this.__index = self
+	
+	do
+		tfm.exec.lowerSyncDelay(this.name)
+		
+		for keyId, _ in next, keys do
+			system.bindKeyboard(this.name, keyId, true, true)
+			system.bindKeyboard(this.name, keyId, false, true)
+			this.keys[keyId] = false
 		end
 		
 	end
 
-	return self
+	return this
 end
 
 function Player:init(rawdata, reset)
@@ -38,6 +46,16 @@ function Player:init(rawdata, reset)
 		self.progress = data.decode(moduleData)
 		self.dataFile = rawdata
 	end
+	
+	tfm.exec.addNPC("Mirko", {
+		title = 468,--228,
+		look = "210;23_FFFFFF+FFFFFF+FFFFFF,0,11_FFFFFF+FFFFFF,45,69_10101+F9FFFF+C7BFB9+C7BFB9+C7BFB9+C7BFB9+C7BFB9+C7BFB9+FFEFD8+FFEFD8,49_FFFFFF+FFFFFF+FFFFFF+FFFFFF,0,23,0",
+		x = 90, -- 745
+		y = 337, -- 196
+		female = true,
+		lookAtPlayer = true,
+		interactive = true
+	}, self.name)
 end
 
 function Player:saveData()
@@ -126,5 +144,110 @@ function Player:updatePosition(x, y, vx, vy, facingRight, isMoving)
 		m = true
 	end
 
-	--self:handleNear(self.x, self.y, self.vx, self.vy)
+	self:handleNear(self.x, self.y, self.vx, self.vy)
+end
+
+function Player:handleNear(x, y, vx, vy)
+	if x > 700 and x < 1000 then
+		ui.addClickable(1, 700, 150, 300, 50, self.name, "craftable", false)
+	else
+		ui.removeClickable(1, self.name)
+	end
+	
+	if (x > 0 and x < 175) and y < 150 then
+		ui.addClickable(2, 25, 50, 150, 50, self.name, "items", false)
+	else
+		ui.removeClickable(2, self.name)
+	end
+end
+
+function Player:insertItem(itemId, amount)
+	local item = self.items[itemId]	
+	
+	if item then
+		amount = amount or 1
+		item.amount = math.min(item.amount + amount, 99)
+		
+		
+		self:setData(item.keyPos, item.amount, true)
+		
+		-- If displaying inventory, then reload display.
+		
+		return true
+	end
+	
+	return false
+end
+
+function Player:extractItem(itemId, amount)
+	local item = self.items[itemId]
+	
+	if item then
+		amount = amount or 1
+		
+		if item.amount >= amount then
+			item.amount = math.max(0, item.amount - amount)
+			
+			self:setData(item.keyPos, item.amount, true)
+			
+			-- If displaying inventory, then reload display.
+		else
+			return false
+		end
+	end
+end
+
+function Player:convertRecipe(recipe)
+	if type(recipe) == "number" then
+		return enum.recipes[recipe]
+	elseif type(recipe) == "table" then
+		return recipe
+	end
+
+	return nil
+end
+
+function Player:displayRecipe(r, display, callback)
+	r = self:convertRecipe(r)
+	
+	-- ...
+end
+
+function Player:hideRecipe(r)
+	-- ...
+end
+
+function Player:assertRecipe(recipe)
+	recipe = self:convertRecipe(recipe)
+		
+	if not recipe then return false, 0 end
+	
+	local isAvailable = true
+	
+	for _, item in next, recipe.craft do
+		if item.q > self.items[item.i].amount then
+			isAvailable = false
+			break
+		end
+	end
+	
+	return isAvailable, recipe.result
+end
+
+function Player:fetchRecipes(returnAll)
+	local recipes = {}
+	
+	local isAvailable
+	local item
+	
+	for index, recipe in ipairs(enum.recipes) do
+		isAvailable = self:assertRecipe(recipe)
+		
+		if isAvailable or returnAll then
+			recipes[#recipes + 1] = {
+				recipe = recipe,
+				available = isAvailable
+			}
+		end
+	end
 end

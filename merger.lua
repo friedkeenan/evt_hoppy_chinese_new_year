@@ -25,7 +25,8 @@ local fileList = {
         files = {
             "newGame",
             "time",
-            "presence"
+            "presence",
+            "input"
         }
     },
     [12] = "start"

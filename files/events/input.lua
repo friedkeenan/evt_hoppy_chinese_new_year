@@ -42,6 +42,12 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 	end
 	
 	local eventCommand = table.remove(args, 1)
+	
+	if eventName == "craftable" then
+		tfm.exec.chatMessage("craft-table", playerName)
+	elseif eventName == "items" then
+		tfm.exec.chatMessage("itens", playerName)
+	end
 end
 
 function eventChatCommand(playerName, message)
@@ -118,4 +124,9 @@ function eventChatCommand(playerName, message)
 			answer("Time set to " .. args[1] .. " seconds.")
 		end
 	end
+end
+
+function eventTalkToNPC(playerName, npcName)
+	tfm.exec.chatMessage(("%s &gt; %s"):format(playerName, npcName))
+	system.openEventShop("", playerName)
 end

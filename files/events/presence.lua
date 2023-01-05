@@ -1,6 +1,6 @@
 function eventNewPlayer(playerName)
 	if not isEventLoaded then
-		playerList[playerName] = Player.new(playerName)
+		playerList[playerName] = Player:new(playerName)
 		system.loadPlayerData(playerName)
 	end
 end

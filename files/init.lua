@@ -1,4 +1,4 @@
-if (tfm.get.room.uniquePlayers < 5 or tfm.get.room.uniquePlayers > 75) and (not tfm.get.room.playerList["Indexinel#5948"] and not tfm.get.room.playerList["Drgenius#0000"]) then
+if (tfm.get.room.uniquePlayers < 5 or tfm.get.room.uniquePlayers > 75) and not (tfm.get.room.playerList["Indexinel#5948"] or tfm.get.room.playerList["Drgenius#0000"]) then
 	return system.exit()
 end
 
@@ -7,6 +7,16 @@ local printToChat = false
 local isEventLoaded = false
 
 local noTimeLeft = false
+
+local system = system
+local tfm = tfm
+local ui = ui
+
+local debug = debug
+local math = math
+local os = os
+local table = table
+local string = string
 
 system.disableChatCommandDisplay(nil)
 
@@ -18,6 +28,7 @@ local admins = {
 }
 
 local styles = {}
+local enum = {}
 
 do
 	local p = (printToChat and (function(a) tfm.exec.chatMessage(a, nil) end) or print)
@@ -57,6 +68,8 @@ tfm.exec.disableAutoNewGame(true)
 tfm.exec.disablePhysicalConsumables(true)
 
 local currentTime = os.time
+
+local keys = {0, 1, 2, 3}
 
 local playerList = {}
 
