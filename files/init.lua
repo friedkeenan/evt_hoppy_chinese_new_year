@@ -2,7 +2,7 @@ if (tfm.get.room.uniquePlayers < 5 or tfm.get.room.uniquePlayers > 75) and not (
 	return system.exit()
 end
 
-local debugMode = false
+local debugMode = true
 local printToChat = false
 local isEventLoaded = false
 
@@ -24,7 +24,8 @@ system.disableChatCommandDisplay(nil)
 
 local admins = {
 	["Indexinel#5948"] = true,
-	["Drgenius#0000"] = true
+	["Drgenius#0000"] = true,
+	["Chibi#0095"] = true
 }
 
 local styles = {}

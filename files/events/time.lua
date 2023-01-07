@@ -2,7 +2,6 @@ function eventLoop(elapsed, remaining)
 	Timer.handle()
 	
 	for playerName, player in next, playerList do
-		print(player)
 		local obj = tfm.get.room.playerList[playerName]
 		if obj then
 			player:updatePosition(obj.x, obj.y, obj.vx, obj.vy)
