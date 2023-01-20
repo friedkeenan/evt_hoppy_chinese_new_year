@@ -21,7 +21,7 @@ local string = string
 system.disableChatCommandDisplay(nil)
 
 math.randomseed(os.time())
---system.luaEventLaunchInterval(math.random(40, 55), math.random(10)) !! PENDING TO DEFINE !!
+system.luaEventLaunchInterval(40, 5)
 
 local admins = {
 	["Indexinel#5948"] = true,
