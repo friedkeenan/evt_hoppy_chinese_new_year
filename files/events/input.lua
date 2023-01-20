@@ -26,6 +26,34 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 			if key == 32 then
 				player:updateDialog(0)
 			end
+		else
+			if key == 48 then -- REMEBER TO DELETE
+				if not player.drawing.active then
+					player:initDrawing()
+				end
+			end
+			if player.drawing.active then
+				if key == 32 then
+					player:setKeepDrawing(nil)
+				end
+			end
+			if key > 48 and key <= 57 then
+				player:setSelectedSlot(key - 48, false)
+			end
+			
+			if key == 69 then -- [E]
+				player:finishDrawing()--player:showInventory(not player.items.displaying)
+			end
+		end
+	end
+end
+
+function eventMouse(playerName, x, y)
+	local player = playerList[playerName]
+	
+	if player then
+		if player.drawing.active then
+			player:registerPoint(x, y)
 		end
 	end
 end
@@ -47,6 +75,14 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 		tfm.exec.chatMessage("craft-table", playerName)
 	elseif eventName == "items" then
 		tfm.exec.chatMessage("itens", playerName)
+	elseif eventName == "inv" then
+		local id = textAreaId % 10
+		player:setSelectedSlot(id, player.crafting.active)
+	elseif eventName == "craft_action" then
+		local id = textAreaId % 10
+		if player.crafting.active then
+			player:pushItem(id, false)
+		end
 	end
 end
 

@@ -15,3 +15,7 @@ function eventPlayerDataLoaded(playerName, rawdata)
 		player:init(rawdata)
 	end
 end
+
+function eventPlayerDied(playerName)
+	tfm.exec.respawnPlayer(playerName)
+end

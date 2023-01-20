@@ -45,7 +45,7 @@ function utils.getGendered(str, gender)
 	end)
 end
 
-math.distance = function(ax, ay, bx, by)
+math.pythag = function(ax, ay, bx, by)
 	return math.sqrt((bx-ax)^2 + (by-ay)^2)
 end
 
@@ -97,6 +97,11 @@ table.randomize = function(tbl)
     return newTable
 end
 
+table.random = function(t)
+	local i = math.random(#t)
+	return t[i], i
+end
+
 table.unreference = function(t)
 	local ut
 
@@ -131,6 +136,10 @@ table.inherit = function(t, ex)
 	end
 
 	return obj
+end
+
+math.udist = function(a, b)
+	return math.abs(a - b)
 end
 
 local Timer = {
