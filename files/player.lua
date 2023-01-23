@@ -25,6 +25,7 @@ function Player:new(playerName)
 			selected = 0,
 			coverId = -1
 		},
+		lampsIds = {},
 		drawing = {
 			active = false,
 			lines = {},
@@ -32,6 +33,7 @@ function Player:new(playerName)
 			keepDrawingId = 0,
 			finished = false,
 			consecutive_points = 0,
+			consecutive_previous = 0,
 			keep_drawing = false
 		},
 		crafting = {
@@ -68,7 +70,7 @@ function Player:playBackgroundMusic(play)
 			
 		local track = music[math.random(#music)]
 			
-		self:playMusic(track, "Main", 60, true, true)
+		self:playMusic(track, "Main", 50, true, true)
 	else
 		self:stopMusic("Main", true)
 	end
@@ -84,25 +86,34 @@ function Player:init(rawdata, reset)
 	
 	do
 		for i=1, 9 do
-			self.progress["i"..i] =1-- self:getData("i" .. i) or 0
+			self.progress["i"..i] = self:getData("i" .. i) or 0
 		end
 		
-		self.progress.hans = 1--self.progress.hans or 0
-		self.progress.inst = 1--self.progress.inst or 0
+		self.progress.hans = self.progress.hans or 0
+		self.progress.inst = self.progress.inst or 0
+		self.progress.finished = self:getData("finished") or false
 	end
+	
+	--[[if self:getData("finished") then
+		self:resetDefaultData()
+	end]]
 	
 	self:initInventory()
 	
 	tfm.exec.addNPC("Mirko", {
 		title = 468,--228,
 		look = "210;23_FFFFFF+FFFFFF+FFFFFF,0,11_FFFFFF+FFFFFF,45,69_10101+F9FFFF+C7BFB9+C7BFB9+C7BFB9+C7BFB9+C7BFB9+C7BFB9+FFEFD8+FFEFD8,49_FFFFFF+FFFFFF+FFFFFF+FFFFFF,0,23,0",
-		x = 90, -- 745
-		y = 337, -- 196
+		x = 311,
+		y = 844,
 		female = true,
 		lookAtPlayer = true,
 		interactive = true
 	}, self.name)
 
+	self:setLampsDisplay(true)
+	self:setMapItems()
+	self:showLampInstallPlace(true)
+	
 	self:playBackgroundMusic(true)
 end
 
@@ -113,6 +124,26 @@ function Player:saveData()
 	system.savePlayerData(self.name, self.dataFile)
 end
 
+function Player:resetDefaultData()
+	self:setData("hans", 0, false)
+	self:setData("inst", 0, false)
+	self:setData("finished", false, false)
+	
+	self:saveData()
+end
+
+
+function Player:resetAllData()
+	for i=1, 9 do
+		self:setData("i" .. i, 0, flase)
+	end
+	
+	self:setData("hans", 0, false)
+	self:setData("inst", 0, false)
+	
+	self:saveData()
+end
+
 function Player:setData(key, value, write)
 	self.progress[key] = value
 	if write then
@@ -121,7 +152,7 @@ function Player:setData(key, value, write)
 end
 
 function Player:getData(key)
-	return self.progress[key] or 0
+	return self.progress[key]
 end
 
 function Player:setVignette(coverage, scale, fadeIn)
@@ -193,6 +224,10 @@ function Player:updatePosition(x, y, vx, vy, facingRight, isMoving)
 	end
 
 	self:handleNear(self.x, self.y, self.vx, self.vy)
+	
+	if f or m then
+		self:setHoldingItem(true)
+	end
 end
 
 function Player:handleNear(x, y, vx, vy)
@@ -209,7 +244,147 @@ function Player:handleNear(x, y, vx, vy)
 	end
 end
 
-function Player:initDrawing()
+function Player:setMapItems()
+	self.mapItems = {}
+	
+	local item = {}
+	for i=1, 7 do
+		item = enum.items[i]
+		local pos = item.pos[math.random(#item.pos)]
+		
+		tfm.exec.addBonus(0, pos.x, pos.y, 100 + i, 0, false, self.name)
+		local id = tfm.exec.addImage(item.sprite, "_50", pos.x, pos.y, self.name, 0.25, 0.25, 0, 1.0, 0.5, 0.5, false)
+		self.mapItems[i] = {
+			x = pos.x,
+			y = pos.y,
+			imageId = id,
+			active = true
+		}
+	end
+end
+
+function Player:collectMapItem(itemId)
+	local mi = self.mapItems[itemId]
+	if mi.active then
+		self:insertItem(itemId, 1)
+		
+		tfm.exec.removeBonus(100 + itemId, self.name)
+		tfm.exec.removeImage(mi.imageId, false)
+		
+		local item = enum.items[itemId]
+		
+		for i=1, math.random(4, 6) do
+			tfm.exec.displayParticle(tfm.enum.particle.cloud, mi.x, mi.y, math.random(-10, 10)/10, math.random(-10,10)/10, 0, 0, self.name)
+		end
+		self:playSound("cite18/lance.mp3", 40, nil, nil)
+		tfm.exec.addImage(item.sprite, "_50", mi.x, mi.y, self.name, 0.25, 0.25, 0, 0.33, 0.5, 0.5, false)
+		
+		self:setHoldingItem(show)
+		mi.active = false
+	end
+end
+
+function Player:setLampsDisplay(display)
+	
+	if type(display) == "number" then
+		if self.lampsIds[display] then
+			tfm.exec.removeImage(self.lampsIds[display], false)
+			self.lampsIds[display] = -1
+		end
+		
+		local lamp = enum.lamp[display]
+		self.lampsIds[display] = tfm.exec.addImage(
+			lamp.sprite or enum.items.lamp.sprite,
+			lamp.foreground and "!1" or "_200",
+			lamp.x, lamp.y,
+			self.name,
+			0.75, 0.75,
+			0, 1.0,
+			0.5, 0.5,
+			false
+		)
+	else
+		for i=1, #self.lampsIds do
+			self.lampsIds[i] = tfm.exec.removeImage(self.lampsIds[i], false)
+		end
+		
+	
+		if display then
+			local installed = self:getData("inst" or 0)
+			local lamp
+			for i=1, installed do
+				lamp = enum.lamp[i]
+				self.lampsIds[i] = tfm.exec.addImage(
+					lamp.sprite or enum.items.lamp.sprite,
+					lamp.foreground and "!45" or "_200",
+					lamp.x, lamp.y,
+					self.name,
+					0.75, 0.75,
+					0, 1.0,
+					0.5, 0.5,
+					false
+				)
+			end
+		end
+	end
+end
+
+function Player:showLampInstallPlace(show)
+	local lampId = self:getData("inst") + 1
+	
+	if self.installLampId then
+		self.installLampId = tfm.exec.removeImage(self.installLampId, true)
+	end
+	
+	if show and lampId <= #enum.lamp then
+		if self.items[9].amount > 0 then
+			local lamp = enum.lamp[lampId]
+			self.installLampId = tfm.exec.addImage(
+				"185cb8722a8.png", "!100",
+				lamp.x, lamp.y,
+				self.name,
+				0.5, 0.5,
+				math.rad(45), 0.5,
+				0.5, 0.5,
+				true
+			)
+		end
+	end
+end
+
+function Player:placeLamp(x, y)
+	local lampId = self:getData("inst") + 1
+	
+	if lampId <= #enum.lamp and self.items[9].amount > 0 then
+		local lamp = enum.lamp[lampId]
+		
+		if math.pythag(x, y, lamp.x, lamp.y) <= 45 then
+			self:extractItem(9, 1)
+			self:setData("inst", lampId, true)
+			
+			do
+				self:playSound("cite18/fleche4.mp3", 55, nil, nil)
+				self:playSound("cite18/flamme.mp3", 55, nil, nil)
+			end
+			
+			self:setLampsDisplay(lampId)
+			self:showLampInstallPlace(true)
+			
+			
+			if lampId == #enum.lamp then
+				self:finishEvent()
+			end
+		end
+	end
+end
+
+function Player:finishEvent()
+	self:playSound("tfmadv/niveausup.mp3", 100, nil, nil)
+	self:playBackgroundMusic(true)
+	self:setData("finished", true, true)
+end
+
+function Player:initDrawing(xp, yp)
 	self.drawing = {
 		active = true,
 		lines = {},
@@ -217,36 +392,81 @@ function Player:initDrawing()
 		consecutive_points = 0,
 		keep_drawing = false,
 		keepDrawingId = -1,
-		finished = false
+		finished = false,
+		hanId = self:getData("hans") + 1
 	}
+	
 	do
 		tfm.exec.freezePlayer(self.name, true, false)
 		tfm.exec.setPlayerGravityScale(self.name, 0, 0)
-		tfm.exec.movePlayer(self.name, 0, 0, true, 0, 0, false)
+		tfm.exec.movePlayer(self.name, self.x, self.y, false, 0, 0, false)
 		
 		self:playBackgroundMusic(false)
 	end
 	
+	self:previewLineToDraw()
 	self:hideOffscreen(true, 0x010101)
-	self:setForeground(false)
 end
 
 function Player:setKeepDrawing(set)
 	if set == nil then
 		set = not self.drawing.keep_drawing
 	else
-		set = self.drawing.keep_drawing
+		set = set--self.drawing.keep_drawing
+	end
+	
+	if self.drawing.keepDrawingId then
+		self.drawing.keepDrawingId = tfm.exec.removeImage(self.drawing.keepDrawingId, false)
 	end
 	
 	if set then
 		self.drawing.keep_drawing = true
+		
+		if self.drawing.consecutive_points > 0 then
+			local point = self.drawing.points[#self.drawing.points]
+			self.drawing.keepDrawingId = tfm.exec.addImage(
+				"185cd3b62c5.png", "!100",
+				point.x, point.y,
+				self.name,
+				1.0, 1.0,
+				0, 0.25,
+				0.5, 0.5,
+				true
+			)
+		end
 	else
 		if self.drawing.consecutive_points >= 2 then
 			self:finishLine()
+			if self.drawing.keepDrawingId then tfm.exec.removeImage(self.drawing.keepDrawingId) end
 		else
-			self.drawing.keep_drawing = true
+			self:setKeepDrawing(true)
 		end
 	end
+end
+
+function Player:getUiCenterFromMap(x, y)
+	x = x or self.x
+	y = y or self.y
+	
+	local xc, yc
+	
+	if x <= 400 then
+		xc = 400
+	elseif x > (MAP_LENGTH - 400) then
+		xc = MAP_LENGTH - 400
+	else
+		xc = x
+	end
+	
+	if y <= 200 then
+		yc = 200
+	elseif y > (MAP_HEIGHT - 200) then
+		yc = MAP_HEIGHT - 200
+	else
+		yc = y
+	end
+	
+	return xc, yc
 end
 
 function Player:registerPoint(x, y)
@@ -255,12 +475,12 @@ function Player:registerPoint(x, y)
 	local count = drawing.consecutive_points
 	local index = #drawing.points + 1
 	
-	print("register point")
+	
 	if count == 0 then
 		self:startLine()
 	end
 	
-	if count < 10 then
+	if count < 10 then		
 		drawing.points[index] = {
 			x = x,
 			y = y,
@@ -268,21 +488,11 @@ function Player:registerPoint(x, y)
 			i1 = -1,
 			i2 = -1,
 		}
+		
+		drawing.consecutive_points = count + 1
+		self:setKeepDrawing(true)
+		
 		local point = drawing.points[index]
-		
-		if drawing.keepSpriteId then
-			drawing.keepSpriteId = tfm.exec.removeImage(drawing.keepSpriteId, false)
-		end
-		
-		drawing.keepSpriteId = tfm.exec.addImage(
-			"185cd3b62c5.png", "!100",
-			point.x, point.y,
-			self.name,
-			1.0, 1.0,
-			0, 0.25,
-			0.5, 0.5,
-			true
-		)
 		
 		point.i1 = tfm.exec.addImage(
 			"185cd3b62c5.png", "!100", 
@@ -293,8 +503,7 @@ function Player:registerPoint(x, y)
 			0.5, 0.5,
 			false
 		)
-		
-		drawing.consecutive_points = count + 1
+	
 		if drawing.consecutive_points >= 2 then
 			local previous = drawing.points[index - 1]
 			
@@ -316,9 +525,103 @@ function Player:registerPoint(x, y)
 	end
 end
 
+function Player:previewLineToDraw(offset)
+	offset = offset or 0
+	local xc, yc = self:getUiCenterFromMap(self.x, self.y)
+	HanPreview:show(self.name, self.drawing.hanId, xc, yc, {(#self.drawing.lines + 1) + offset})
+end
+
 function Player:startLine()
 	self:setKeepDrawing(true)
 	self:playSound("deadmaze/objectif2.mp3", 100, nil, nil)
+	--self:previewLineToDraw()
+end
+
+function Player:undoDrawingAction()
+	local drawing = self.drawing
+	
+	if drawing.consecutive_points > 0 then
+		self:removePoint(-1)
+		--[[if drawing.consecutive_points == 1 then
+			self:registerPoint(0, 0)
+			self:finishLine()
+		end]]
+	else
+		local line = drawing.lines[#drawing.lines]
+		if line then
+			if #line == 0 then
+				drawing.consecutive_points = 0
+				self:removeLine(-1)
+				self:undoDrawingAction()
+				self:previewLineToDraw(-2)
+			else
+				drawing.consecutive_points = #line
+				self:undoDrawingAction()
+				self:previewLineToDraw(0)
+			end
+		else
+			local manual_count = 0
+			for k, v in next, drawing.lines do
+				if type(v) == "number" then
+					manual_count = manual_count + 1
+				end
+			end
+			
+			if #drawing.lines ~= manual_count then
+				self:closeDrawing()
+				tfm.exec.chatMessage("Canvas Error")
+			else
+				if #drawing.lines == 0 then
+					for i=1, #drawing.points do
+						self:removePoint(-1)
+					end
+				end
+				
+				self:previewLineToDraw()
+			end
+		end
+	end
+	
+	printt(drawing)
+	
+	self:setKeepDrawing(true)
+end
+
+function Player:removePoint(id)
+	local drawing = self.drawing
+	if id < 0 then id = (#drawing.points - (math.abs(id) - 1)) end
+	
+
+	local point = drawing.points[id]
+	
+	if point then
+		tfm.exec.removeImage(point.i1 or -1, false)
+		tfm.exec.removeImage(point.i2 or -1, false)
+		
+		local line = drawing.lines[point.lineId]
+		if line then
+			table.remove(line, #line - offset)
+			
+			if #line == 0 then
+				self:removeLine(point.lineId)
+			end
+		end
+		
+		table.remove(drawing.points, id)
+		if drawing.consecutive_points > 0 then 
+			drawing.consecutive_points = drawing.consecutive_points - 1
+		end
+	end
+end
+
+function Player:removeLine(id)
+	local drawing = self.drawing
+	if id < 0 then id = #drawing.lines - (math.abs(id) - 1) end
+	
+	
+	if drawing.lines[id] then
+		table.remove(drawing.lines, id)
+	end
 end
 
 function Player:finishLine()
@@ -330,7 +633,7 @@ function Player:finishLine()
 		local point
 		for i = start, #drawing.points do
 			point = drawing.points[i]
-			
+			point.lineId = #drawing.lines + 1
 			line[#line + 1] = table.unreference(point)
 		end
 		
@@ -344,7 +647,7 @@ function Player:finishLine()
 			a = b
 			b = line[i]
 			
-			angle = math.abs(math.atan2(a.y - b.y, a.x - b.x))
+			angle = math.udist(angle, math.abs(math.atan2(a.y - b.y, a.x - b.x)))
 			angle_total = angle_total + math.deg(angle)
 			
 			large = math.pythag(a.x, a.y, b.x, b.y)
@@ -361,14 +664,18 @@ function Player:finishLine()
 		end
 		
 		self:playSound("tfmadv/carte3.mp3", 100, nil, nil)
+		
+		
 	end
+	
+	self:previewLineToDraw()
 	
 	drawing.consecutive_points = 0
 end
 
-function Player:correctDrawing() -- Regulate drawing: scale, pos
+function Player:correctDrawing(han) -- Regulate drawing: scale, pos
 	local drawing = self.drawing
-	
+	local w_norm = han and han.width or 200
 	local xMin, yMin = 9e9, 9e9
 	local xMax, yMax = 0, 0
 	
@@ -384,12 +691,8 @@ function Player:correctDrawing() -- Regulate drawing: scale, pos
 	height = yMax - yMin
 	width = xMax - xMin
 	
-	local xFactor = 200 / width
+	local xFactor = w_norm / width
 	local yFactor = 200 / height
-	
-	printf("Width: %d, Height: %d", width, height)
-	printf("xFact: %f, yFact: %d", xFactor, yFactor)
-	printf("xMin: %d, yMinf: %d", xMin, yMin)
 	
 	for index, point in ipairs(drawing.points) do
 		point.x = (point.x - xMin) * xFactor
@@ -413,20 +716,23 @@ function Player:correctDrawing() -- Regulate drawing: scale, pos
 end
 
 function Player:finishDrawing()
+	local han = enum.han[self.drawing.hanId]
+	
 	self:finishLine()
-	self:correctDrawing()
+	self:correctDrawing(han)
 	
-	local symbols_done = self:getData("hans")
-	
-	if self:assertDrawing(enum.han[symbols_done + 1]) then
-		printf("Your drawing is correct for this Han")
-		self:setData("hans", symbols_done + 1, true)
+	if self:assertDrawing(han) then
+		--printf("Your drawing is correct for this Han")
+		self:setData("hans", self.drawing.hanId, true)
 		self:insertItem(9, 1)
+		self:playSound("deadmaze/niveau/gain_niveau.mp3", 100, nil, nil)
 	else
 		printf("Your drawing is bad.")
 	end
 	
 	self.drawing.finished = true
+	
+	HanPreview:hide(self.name)
 	
 	Timer.new(1000, false, function()
 		self:closeDrawing()
@@ -441,7 +747,7 @@ function Player:assertDrawing(han)
 		local l_han, l_draw
 		local p_han, p_draw
 		local pdist
-		printf("drawing: %d, han: %d", #drawing.lines, #han.lines)
+		
 		if #drawing.lines == #han.lines then
 			for i = 1, #han.lines do
 				l_han = han.lines[i]
@@ -452,9 +758,7 @@ function Player:assertDrawing(han)
 					p_draw = l_draw[1]
 					
 					pdist = math.pythag(p_han.x, p_han.y, p_draw.x, p_draw.y)
-					printf("hx: %d, hy: %d, px: %d, py: %d", p_han.x, p_han.y, p_draw.x, p_draw.y)
-					printf("Distance 1: %f", pdist)
-					if pdist > 30 then
+					if pdist > 40 then
 						return false
 					end
 					
@@ -462,21 +766,17 @@ function Player:assertDrawing(han)
 					p_draw = l_draw[#l_draw]
 					
 					pdist = math.pythag(p_han.x, p_han.y, p_draw.x, p_draw.y)
-					printf("hx: %d, hy: %d, px: %d, py: %d", p_han.x, p_han.y, p_draw.x, p_draw.y)
-					printf("Distance 2: %f", pdist)
-					if pdist > 30 then
+					if pdist > 40 then
 						return false
 					end
 				end
 				pdist = math.udist(l_han.angle, l_draw.angle)
-				printf("A1: %f, A2: %f, Angle dif: %f", l_han.angle, l_draw.angle, pdist)
-				if pdist > 34 then
+				if pdist > (22.5 * #l_han) then
 					return false
 				end
 				
 				pdist = math.udist(l_han.large, l_draw.large)
-				printf("Lenght dif: %f", pdist)
-				if pdist > (40 * #han.lines) then
+				if pdist > (40 * #l_han) then
 					return false
 				end
 			end
@@ -509,6 +809,8 @@ function Player:closeDrawing()
 	self.drawing.lines = {}
 	self.drawing.points = {}
 	self.drawing.active = false
+	
+	HanPreview:hide(playerName)
 	
 	self:hideOffscreen(false)
 end
@@ -545,55 +847,69 @@ function Player:initInventory()
 	end
 end
 
-function Player:setCrafting(size)	
+function Player:setCrafting(size)
+	
+	local ms
 	local slots = {}
+	local xc, yc
 	if size == 3 then
+		ms = 1.0
 		slots = {
-			{x=400, y=100},
-			{x=250, y=300},
-			{x=550, y=300}
+			{x=412, y=103},
+			{x=292, y=295},
+			{x=537, y=301}
 		}
+		xc = 365
+		yc = 180
+		self.crafting.imageId = tfm.exec.addImage("185da67352b.png", ":12", 400, 180, self.name, ms, ms, 0, 1.0, 0.5, 0.5, true)
 	elseif size == 5 then
+		ms = 0.85
 		slots = {
-			{x = 400, y = 75},
-			{x = 225, y = 200},
-			{x = 575, y = 200},
-			{x = 315, y = 325},
-			{x = 485, y= 325}
+			{x = 409, y = 79},
+			{x = 276, y = 174},
+			{x = 540, y = 174},
+			{x = 338, y = 321},
+			{x = 485, y= 321}
 		}
+		xc = 375
+		yc = 180
+		self.crafting.imageId = tfm.exec.addImage("185dbe49fd1.png", ":12", 400, 190, self.name, ms, ms, 0, 1.0, 0.5, 0.5, true)
 	end
 	
 	for i=1, size do
 		self.crafting[i] = {
-			dx = slots[i].x - 20,
-			dy = slots[i].y - 20,
+			dx = slots[i].x - (20 * ms),
+			dy = slots[i].y - (20 * ms),
 			id = 0,
 			amount = 0,
-			dscale = 0.5,
+			dscale = 0.35 * ms,
 			sprite = nil,
 			spriteId = -1
 		}
 	end
 	
 	self.crafting[size + 1] = {
-		dx = 360,
-		dy = 160,
+		dx = xc,
+		dy = yc,
 		id = 0,
 		amount = 0,
-		dscale = 1.0,
+		dscale = 0.9 * ms,
 		sprite = nil,
 		spriteId = -1
 	}
 	
 	for i = 1, #self.crafting do
 		local slot = self.crafting[i]
-		ui.addClickable(300 + i, slot.dx, slot.dy, 80 * slot.dscale, 80 * slot.dscale, self.name, "craft_action", true)
+		ui.addClickable(300 + i, slot.dx, slot.dy, 80 * slot.dscale * ms, 80 * slot.dscale * ms, self.name, "craft_action", true)
 	end
 	self.crafting.active = true
 	self.crafting.size = size
 end
 
 function Player:closeCrafting()
+	if self.crafting.imageId then
+		self.crafting.imageId = tfm.exec.removeImage(self.crafting.imageId, true)
+	end
 	for i = 1, #self.crafting do
 		ui.removeClickable(300 + i, self.name)
 		if i ~= #self.crafting then
@@ -808,6 +1124,45 @@ function Player:setSelectedSlot(id, push)
 				false
 			)
 		end
+	else
+		if self.items.selectedImgId then
+			self.items.selectedImgId = tfm.exec.removeImage(self.items.selectedImgId, false)
+		end
+	end
+	
+	self:setHoldingItem(true)
+end
+
+function Player:setHoldingItem(show)
+	local valid = (self.items.selected ~= 0)
+
+	if self.items.selectedHoldingId then
+		tfm.exec.removeImage(self.items.selectedHoldingId, false)
+		self.items.selectedHoldingId = nil
+	end
+	
+	if self.drawing.active then return end
+
+	if show and valid then
+		local item = self.items[self.items.selected]
+		
+		if item and item.amount > 0 then
+			local xf = self.isFacingRight and 1 or -1
+			local rot = math.rad(self.isMoving and 20 or 0)
+			local scale = 0.25
+			local xpos = self.isMoving and 14 or 11
+			local ypos = self.isMoving and 12 or 7
+			self.items.selectedHoldingId = tfm.exec.addImage(
+				item.sprite,
+				"$" .. self.name,
+				xpos * xf, ypos,
+				nil,
+				scale * xf, scale,
+				rot * xf, 1.0,
+				0.5 * xf, 0.5,
+				false
+			)
+		end
 	end
 end
 
@@ -822,6 +1177,9 @@ function Player:insertItem(itemId, amount)
 		
 		if self.items.displaying then
 			self:showInventoryItem(itemId, nil)
+		end
+		if item.id == 9 then
+			self:showLampInstallPlace(true)
 		end
 		
 		return true
@@ -932,8 +1290,8 @@ function Player:newDialog(npcName, dialogId, noDist)
     self.onDialog = {
 		oldCursor = 1,
 		cursor = 1,
-		Text = textInfo,
-		pInf = dialog,
+		Text = "",
+		pInf = {},
 		Npc = {},
 		currentText = "",
 		displayText = "",
@@ -943,7 +1301,7 @@ function Player:newDialog(npcName, dialogId, noDist)
 		finished = false,
 		completed = false,
 		pointer = 0,
-		sprite = Npc.dialogSprite,
+		sprite = "185d44bafbb.png",
 		distHide = not noDist
     }
 
@@ -1130,7 +1488,9 @@ Stop a playing music.
 ]]
 
 function Player:playMusic(music, channel, volume, loop, fade)
-    tfm.exec.stopMusic('musique')
+	channel = channel .. "-" .. self.name
+    tfm.exec.stopMusic('musique', self.name)
+	
     tfm.exec.playMusic(music, channel, volume, loop, fade, self.name)
 end
 
@@ -1141,6 +1501,7 @@ function Player:playMusicDelay(delay,music,channel,volume,loop,fade)
 end
 
 function Player:stopMusic(channel,fadeOut)
+	channel = channel .. "-" .. self.name
     fadeOut=(not not fadeOut)
     if fadeOut then
         tfm.exec.stopMusic(channel, self.name)

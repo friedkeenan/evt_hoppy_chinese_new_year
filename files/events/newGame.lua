@@ -14,9 +14,17 @@ function eventNewGame()
 			tfm.exec.chatMessage(tex)
 			tfm.exec.stopMusic("musique")
 			
+			--[[local hour = os.date("*t", os.time()/1000).hour
+			
+			local color = ({
+				0xF0D9C0,
+				0xED68A9,
+				0xDE4751
+			})[(hour%3) + 1] ] ]]
 			
 			for playerName, player in next, playerList do
-				player:playMusic(track, "Main", 60, true, true)
+				player:playBackgroundMusic(true)
+				--player:setForeground(true, color, 0.1, false)
 			end
 		end, 500, false)
 		

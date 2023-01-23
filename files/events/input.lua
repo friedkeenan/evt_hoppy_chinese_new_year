@@ -17,9 +17,11 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 		if key == 1 then
 			m = down
 		end
+		
+		player:updatePosition(x, y, vx, vy, fr, m)
 	end
 	
-	player:updatePosition(x, y, vx, vy, fr, m)
+	
 	
 	if down then
 		if player.onDialog then
@@ -28,13 +30,27 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 			end
 		else
 			if key == 48 then -- REMEBER TO DELETE
-				if not player.drawing.active then
+				--[[if player.drawing.active then
+					player:finishDrawing()
+				else
 					player:initDrawing()
-				end
+				end--]]
+				
+				--[[]]if player.crafting.active then
+					player:closeCrafting()
+				else
+					player:setCrafting(5)
+				end--]]
 			end
 			if player.drawing.active then
 				if key == 32 then
 					player:setKeepDrawing(nil)
+				elseif key == 88 then -- [Z]
+					player:undoDrawingAction()
+				end
+			else
+				if key == 32 then
+					player:placeLamp(x, y)
 				end
 			end
 			if key > 48 and key <= 57 then
@@ -42,7 +58,7 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 			end
 			
 			if key == 69 then -- [E]
-				player:finishDrawing()--player:showInventory(not player.items.displaying)
+				player:showInventory(not player.items.displaying)
 			end
 		end
 	end
@@ -120,6 +136,22 @@ function eventChatCommand(playerName, message)
 				admins[args[i]] = true
 				answer(args[i] .. "has been set as admin.")
 			end
+		elseif command == "give" then
+			if tonumber(args[1]) and args[1] < 10 then
+				player:insertItem(args[1], tonumber(args[2]) or 1)
+			end
+		elseif command == "seeHan" then
+			if #args == 0 then
+				HanPreview:hide(player.name)
+			else
+				local hanId = table.remove(args, 1)
+				
+				local xc, yc = player:getUiCenterFromMap()
+				if #args == 0 then
+					args = nil
+				end
+				HanPreview:show(player.name, hanId, xc, yc, args)
+			end
 		elseif command == "join" then
 			if not player then
 				playerList[playerName] = Player.new(playerName)
@@ -148,7 +180,7 @@ function eventChatCommand(playerName, message)
 			else
 				p = player
 			end
-			player:setData(args[1], args[2])
+			player:setData(args[1], args[2], true)
 		elseif command == "removealldata" then
 			player:resetAllData()
 			answer("Data removed")
@@ -163,6 +195,14 @@ function eventChatCommand(playerName, message)
 end
 
 function eventTalkToNPC(playerName, npcName)
-	tfm.exec.chatMessage(("%s &gt; %s"):format(playerName, npcName))
-	system.openEventShop("", playerName)
+	--tfm.exec.chatMessage(("%s &gt; %s"):format(playerName, npcName))
+	system.openEventShop("evt_hoppy_cny", playerName)
+end
+
+function eventPlayerBonusGrabbed(playerName, bonusId)
+	local player = playerList[playerName]
+	
+	if player then
+		player:collectMapItem(bonusId%100)
+	end
 end

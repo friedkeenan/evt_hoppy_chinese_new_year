@@ -16,6 +16,10 @@ function eventLoop(elapsed, remaining)
 				end
 			end
 		end
+		
+		if time_count%10000 == 0 then
+			player:saveData()
+		end
 	end
 	
 	tfm.exec.stopMusic("musique", nil) -- Regular game music

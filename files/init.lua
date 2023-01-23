@@ -37,7 +37,11 @@ local IRL_CHINESE_FESTIVAL = false
 local href = "<a href='event:%s'>%s</a>"
 
 do	
-	local p = (printToChat and (function(a) tfm.exec.chatMessage(a, nil) end) or print)
+	local p = (printToChat and (function(a)
+		for i=1, math.ceil(#a / 1000) do
+			tfm.exec.chatMessage(a:sub(1 + ((i-1)*1000), i*1000), nil)
+		end
+	end) or print)
 	local tc = table.concat
 	local ts = tostring
 	print = function(...)
@@ -73,6 +77,10 @@ do
 	
 end
 
+local getMapProperty = function(name)
+	return xml:match(('<C><P.-%s="(.-)".->'):format(name))
+end
+
 tfm.exec.disableAfkDeath(true)
 tfm.exec.disableAutoShaman(true)
 tfm.exec.disableAutoTimeLeft(true)
@@ -84,8 +92,9 @@ tfm.exec.disablePhysicalConsumables(true)
 
 local currentTime = os.time
 
-local keys = {0, 1, 2, 3, 13, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 69} -- Remember to delete 48
+local keys = {0, 1, 2, 3, 13, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 69, 88} -- Remember to delete 48
 
+local HanPreview = {}
 local playerList = {}
 
 local Player = {}
