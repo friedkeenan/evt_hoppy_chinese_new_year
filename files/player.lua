@@ -503,6 +503,8 @@ function Player:talkToNpc(x, y)
 			end
 		elseif Npc.place == "entrance" then
 			self:newDialog("welcome", false)
+		elseif Npc.place == "toptree" then
+			self:newDialog("thanks", false)
 		end
 	end
 end
@@ -536,13 +538,12 @@ function Player:showLampInterface(show)
 		-- +- 170
 		local rr
 		do -- 1
-			rr = r[1]
 			self.interface[1].iconId = tfm.exec.addImage(
 				enum.items.lamp.sprite, ":70",
 				265, 225,
 				self.name,
 				2.25, 2.25,
-				0, rr.available and 1.0 or 0.4,
+				0, r[1].available and 1.0 or 0.4,
 				0.5, 0.5,
 				true
 			)
@@ -577,19 +578,18 @@ function Player:showLampInterface(show)
 					1.0, true
 				)
 			end
-			if rr.available then
+			if r[1].available then
 				ui.addClickable(121, 60, 55, 310, 310, self.name, "craft_a_lamp", true)
 			end
 		end
 		
 		do -- 2
-			rr = r[2]
 			self.interface[2].iconId = tfm.exec.addImage(
 				enum.items.lamp_final.sprite, ":70",
 				630, 225,
 				self.name,
 				2.25, 2.25,
-				0, rr.available and 1.0 or 0.4,
+				0, r[2].available and 1.0 or 0.4,
 				0.5, 0.5,
 				true
 			)
@@ -623,7 +623,7 @@ function Player:showLampInterface(show)
 					1.0, true
 				)
 			end
-			if rr.available then
+			if r[2].available then
 				ui.addClickable(122, 422, 55, 310, 310, self.name, "craft_a_lamp_draw", true)
 			end
 		end
@@ -655,9 +655,21 @@ function Player:showDrawingInterface(show)
 			
 			ui.addTextArea(40, text, self.name, 660, y, 120, 200, 0x0, 0x0, 1.0, true)
 			self.drawing.interfaceId = tfm.exec.addImage("185e3742fcc.png", ":20", 715, y+29, self.name, 0.1, 0.4, math.rad(90), 1.0, 0.5, 0.5, true)
+			
+			self.drawing.tipId = 1
+			ui.addTextArea(
+				39,
+				styles.drawuitip:format("draw_tip", Text:get("draw instruct ".. self.drawing.tipId, self.language, self.gender)),
+				self.name,
+				40, 370,
+				720, 50,
+				0x010101, 0x010101,
+				0.5, true
+			)
 		end
 	else
 		ui.removeTextArea(40, self.name)
+		ui.removeTextArea(39, self.name)
 		if self.drawing.interfaceId then
 			self.drawing.interfaceId = tfm.exec.removeImage(self.drawing.interfaceId, true)
 		end
@@ -1404,7 +1416,7 @@ function Player:pushItem(id, into)
 		local item = self.items[id]
 		if self.crafting.size == 3 and id < 6 or id == 9 then
 			return false
-		elseif self.crafting.size == 5 and id > 6 then
+		elseif self.crafting.size == 5 and id > 5 then
 			return false
 		end
 		if item.amount > 0 then
@@ -1428,7 +1440,7 @@ function Player:pushItem(id, into)
 					)
 					
 					self:extractItem(id, 1)
-					local r = self:fetchRecipes(false)
+					local r = self:fetchRecipes(false, false)
 					
 					if #r > 0 then
 						local result = r[1].recipe.result
@@ -1477,6 +1489,16 @@ function Player:pushItem(id, into)
 						ax.sprite = nil
 						ax.spriteId = tfm.exec.removeImage(ax.spriteId or -1, false)
 						ax.id = 0
+					end
+				else
+					local rsl = self.crafting[#self.crafting]
+					
+					rsl.amount = 0
+					rsl.id = 0
+					rsl.amount = 0
+					rsl.sprite = nil
+					if rsl.spriteId then
+						rsl.spriteId = tfm.exec.removeImage(rsl.spriteId, false)
 					end
 				end
 			end
@@ -1636,7 +1658,7 @@ function Player:assertRecipe(recipe, onInv)
 		for i = 1, #stack - (onInv and 0 or 1) do
 			if item.id == stack[i].id then
 				
-				if item.amount > stack[i].amount then
+				if stack[i].amount < item.amount then
 					isAvailable = false
 					break
 				end
@@ -1680,9 +1702,9 @@ function Player:newDialog(dialogId, noDist)
 	
 	local text, bunny
 	local hype = {
-		[3] = "185d44b62bb.png",
-		[2] = "185d44ac8b5.png",
-		[1] = "185d44b15b4.png"
+		[3] = {sprite="185d44b62bb.png", alignX=0, alignY=0},
+		[2] = {sprite="185d44ac8b5.png", alignX=-20, alignY=10},
+		[1] = {sprite="185d44b15b4.png", alignX=5, alignY=10},
 	}
 	
 	if type(dialogId) == "number" then
@@ -1708,7 +1730,9 @@ function Player:newDialog(dialogId, noDist)
 		completed = false,
 		pointer = 0,
 		sprite = "185d44bafbb.png",
-		bunny = bunny,
+		bunny = bunny.sprite,
+		bunnyAlignX = bunny.alignX,
+		bunnyAlignY = bunny.alignY,
 		distHide = not noDist
     }
 
@@ -1720,11 +1744,13 @@ function Player:setDialogDisplay(instruction)
 
 	if Dialog then
 		if instruction == "new" then
-			local id = tfm.exec.addImage(Dialog.sprite, ":1", 450, 370, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
-			local id2 = tfm.exec.addImage(Dialog.bunny, ":10", 150, 350, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
+			local x = 100
+			local yt = 340
+			local id = tfm.exec.addImage(Dialog.sprite, ":1", x+300, yt, self.name, 1.0, 0.75, 0, 1.0, 0.5, 0.5, true)
+			local id2 = tfm.exec.addImage(Dialog.bunny, ":10", x + Dialog.bunnyAlignX, (yt-70)+Dialog.bunnyAlignY, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
 			Dialog.bunnyId = id2
 			Dialog.directAccess = 2000 + (id or 0)
-			ui.addTextArea(Dialog.directAccess, "", self.name, 200, 315, 470, 131, 0x0, 0x0, 1.0, true)
+			ui.addTextArea(Dialog.directAccess, "", self.name, x+100, yt-35, 420, 131, 0x0, 0x0, 1.0, true)
 
 			self:setDialogDisplay("next")
 		elseif instruction == "update" then

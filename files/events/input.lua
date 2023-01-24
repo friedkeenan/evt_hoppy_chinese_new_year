@@ -121,6 +121,10 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 		player:finishDrawing()
 	elseif eventName == "draw_undo" then
 		player:undoDrawingAction()
+	elseif eventName == "draw_tip" then
+		player.drawing.tipId = player.drawing.tipId + 1
+		player.drawing.tipId = ((player.drawing.tipId-1)%5)+1
+		ui.updateTextArea(39, styles.drawuitip:format("draw_tip", Text:get("draw instruct ".. player.drawing.tipId, player.language, player.gender)), playerName)
 	end
 end
  

@@ -27,8 +27,13 @@ Text["en"] = {
 	},
 	install = "Hop over the Village and install the Lamp you just finished!",
 	draw = {
-		instruct = "Draw the Chinese word over the Lamp !",
-		finish_line = "You can finish a Line by pressing space.",
+		instruct = {
+			"Draw the Chinese word over the Lamp !",
+			"Click on the Screen to start drawing a line. For each point, click again!",
+			"You can finish a Line by pressing Space.",
+			"When your drawing is ready, you can click the 'Finish Drawing' button.",
+			"If you draw the word correctly, you will get a Lamp ready to install on the Village!"
+		},
 		lamp = "Draw on Lamp",
 		finish = "Finish Drawing",
 		undo = "Undo Trace",

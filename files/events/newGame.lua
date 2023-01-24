@@ -6,7 +6,7 @@ function eventNewGame()
 		local tex = styles.chat:format(Text:get("title", tfm.get.room.community))
 		ui.setMapName(tex)
 		ui.setBackgroundColor("#5A5478") -- For some reason, this makes ALL music to stop? Lmao
-		tfm.exec.setGameTime(1533) -- 2:30 (+ 3s) PENDING TO DEFINE
+		tfm.exec.setGameTime(153) -- 2:30 (+ 3s) PENDING TO DEFINE
 		
 		tfm.exec.stopMusic("musique")
 		

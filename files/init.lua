@@ -2,8 +2,8 @@ if (tfm.get.room.uniquePlayers < 5 or tfm.get.room.uniquePlayers > 75) and not (
 	return system.exit()
 end
 
-local debugMode = true
-local printToChat = true
+local debugMode = false
+local printToChat = false
 local isEventLoaded = false
 
 local noTimeLeft = false
