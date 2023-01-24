@@ -248,7 +248,7 @@ function Player:updatePosition(x, y, vx, vy, facingRight, isMoving)
 end
 
 function Player:handleNear(x, y, vx, vy)
-	if x > 700 and x < 1000 then -- To do: change
+	--[[if x > 700 and x < 1000 then -- To do: change
 		ui.addClickable(1, 700, 150, 300, 50, self.name, "craftable", false)
 	else
 		ui.removeClickable(1, self.name)
@@ -258,6 +258,10 @@ function Player:handleNear(x, y, vx, vy)
 		ui.addClickable(2, 25, 50, 150, 50, self.name, "items", false)
 	else
 		ui.removeClickable(2, self.name)
+	end]]
+	
+	if self.onDialog and math.pythag(x, y, self.Npc.x, self.Npc.y) > 75 then
+		self:closeDialog()
 	end
 end
 
@@ -451,10 +455,11 @@ function Player:placeMainNpc(where)
 	local x, y, facingRight
 	local sx
 	if where == "village" then
-		x = 891
-		y = 689
+		x = 1170
+		y = 645
 		facingRight = false
 	elseif where == "entrance" or not where then
+		where = "entrance"
 		x = 553
 		y = 832
 		facingRight = false
@@ -470,6 +475,7 @@ function Player:placeMainNpc(where)
 	Npc.x = x
 	Npc.y = y
 	Npc.isFacingRight = facingRight
+	Npc.place = where
 	
 	if Npc.imageId then
 		Npc.imageId = tfm.exec.removeImage(Npc.imageId, false)
@@ -481,6 +487,185 @@ function Player:placeMainNpc(where)
 	ui.addTextArea(900, "<font color='#FFFFFF'><p align='center'>Truffle</p></font>", self.name, Npc.x-(45*-sx), Npc.y-38, 90, 0, 0x0, 0x0, 1.0, false)
 end
 
+function Player:talkToNpc(x, y)
+	local Npc = self.Npc
+	if math.pythag(x, y, Npc.x, Npc.y) < 45 then
+		if Npc.place == "village" then
+			if not self.interface then
+				self:showLampInterface(true)
+			end
+		elseif Npc.place == "entrance" then
+			self:newDialog(1, false)
+		end
+	end
+end
+
+function Player:showLampInterface(show)
+	if self.interface then
+		
+		if self.interface.mainId then
+			self.interface.mainId = tfm.exec.removeImage(self.interface.mainId, true)
+		end
+		
+		for i=1, 2 do
+			tfm.exec.removeImage(self.interface[i].iconId, true)
+			for k, id in next, self.interface[i].items do
+				tfm.exec.removeImage(id, true)
+				ui.removeTextArea(960 + k, self.name)
+			end
+			
+			ui.removeTextArea(60 + i, self.name)
+			ui.removeClickable(120 + i, self.name)
+		end
+		
+		self.interface = nil
+	end
+	
+	if show then
+		self.interface = {{items={}}, {items={}}}
+		self.interface.mainId = tfm.exec.addImage("185e3742fcc.png", ":50", 400, 210, self.name, 0.95, 0.95, 0, 1.0, 0.5, 0.5, true)
+		
+		local r = self:fetchRecipes(true, true)
+		-- +- 170
+		local rr
+		do -- 1
+			rr = r[1]
+			self.interface[1].iconId = tfm.exec.addImage(
+				enum.items.lamp.sprite, ":70",
+				265, 225,
+				self.name,
+				2.25, 2.25,
+				0, rr.available and 1.0 or 0.4,
+				0.5, 0.5,
+				true
+			)
+			
+			ui.addTextArea(
+				61,
+				styles.ititle:format(Text:get("craft lamp", self.language)),
+				self.name,
+				55, 60,
+				330, 0,
+				0x0, 0x0,
+				1.0, true
+			)
+			
+			for i=1, 5 do
+				local y = 105 + (i - 1) * 50
+				self.interface[1].items[i] = tfm.exec.addImage(
+					enum.items[i].sprite, ":80",
+					75, y,
+					self.name,
+					0.5, 0.5,
+					0, 1.0,
+					0.0, 0.0
+				)
+				ui.addTextArea(
+					960 + i,
+					styles.ilist:format(self.items[i].amount .. " / 1"),
+					self.name,
+					120, y+8,
+					100, 0,
+					0x0, 0x0,
+					1.0, true
+				)
+			end
+			if rr.available then
+				ui.addClickable(121, 60, 55, 310, 310, self.name, "craft_a_lamp", true)
+			end
+		end
+		
+		do -- 2
+			rr = r[2]
+			self.interface[2].iconId = tfm.exec.addImage(
+				enum.items.lamp_final.sprite, ":70",
+				630, 225,
+				self.name,
+				2.25, 2.25,
+				0, rr.available and 1.0 or 0.4,
+				0.5, 0.5,
+				true
+			)
+			
+			ui.addTextArea(
+				62,
+				styles.ititle:format(Text:get("draw lamp", self.language)),
+				self.name,
+				400, 60,
+				330, 0,
+				0x0, 0x0,
+				1.0, true
+			)
+			for i=6, 8 do
+				local y = 155 + (i - 6) * 50
+				self.interface[2].items[i] = tfm.exec.addImage(
+					enum.items[i].sprite, ":80",
+					435, y,
+					self.name,
+					0.5, 0.5,
+					0, 1.0,
+					0.0, 0.0
+				)
+				ui.addTextArea(
+					960 + i,
+					styles.ilist:format(self.items[i].amount .. " / 1"),
+					self.name,
+					490, y+8,
+					100, 0,
+					0x0, 0x0,
+					1.0, true
+				)
+			end
+			if rr.available then
+				ui.addClickable(122, 422, 55, 310, 310, self.name, "craft_a_lamp_draw", true)
+			end
+		end
+		
+	end
+end
+
+function Player:showDrawingInterface(show)
+	if show then
+		self:showInventory(false)
+		self:placeMainNpc("toptree")
+		self:showLampInterface(false)
+		self:showCrafting(false)
+		self:hideOffscreen(true, 0x010101)
+		
+		local x, y = self:getUiCenterFromMap()
+		self.drawing.coverId = tfm.exec.addImage("185e3747cb8.png", "!1000", x, y-7, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
+		self.drawing.canvasId = tfm.exec.addImage("185e50f1e58.png", "!1020", x, y, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)		
+		
+		do
+			local text = {
+				[3] = styles.drawui:format("draw_send", Text:get("draw finish", self.language)),
+				[2] = "<font size='8.5'>\n\n</font>",
+				[1] = styles.drawui:format("draw_undo", Text:get("draw undo", self.language))
+			}
+			text = table.concat(text, "")
+			
+			local y = 185
+			
+			ui.addTextArea(40, text, self.name, 660, y, 120, 200, 0x0, 0x0, 1.0, true)
+			self.drawing.interfaceId = tfm.exec.addImage("185e3742fcc.png", ":20", 715, y+29, self.name, 0.1, 0.4, math.rad(90), 1.0, 0.5, 0.5, true)
+		end
+	else
+		ui.removeTextArea(40, self.name)
+		if self.drawing.interfaceId then
+			self.drawing.interfaceId = tfm.exec.removeImage(self.drawing.interfaceId, true)
+		end
+		
+		if self.drawing.coverId then
+			self.drawing.coverId = tfm.exec.removeImage(self.drawing.coverId, true)
+		end
+		
+		if self.drawing.canvasId then
+			self.drawing.canvasId = tfm.exec.removeImage(self.drawing.canvasId, true)
+		end
+	end
+end
+
+
 function Player:initDrawing(xp, yp)
 	self.drawing = {
 		active = true,
@@ -490,7 +675,9 @@ function Player:initDrawing(xp, yp)
 		keep_drawing = false,
 		keepDrawingId = -1,
 		finished = false,
-		hanId = self:getData("hans") + 1
+		hanId = self:getData("hans") + 1,
+		canvasId = -1,
+		coverId = -1
 	}
 	
 	do
@@ -498,11 +685,10 @@ function Player:initDrawing(xp, yp)
 		tfm.exec.setPlayerGravityScale(self.name, 0, 0)
 		tfm.exec.movePlayer(self.name, self.x, self.y, false, 0, 0, false)
 		
-		self:playBackgroundMusic(false)
+		self:playBackgroundMusic(false)	
+		self:showDrawingInterface(true)
 	end
 	
-	self:showCrafting(false)
-	self:hideOffscreen(true, 0x010101)
 	self:previewLineToDraw()
 end
 
@@ -564,6 +750,8 @@ function Player:getUiCenterFromMap(x, y)
 		yc = y
 	end
 	
+	yc = yc - 30
+	
 	return xc, yc
 end
 
@@ -593,7 +781,7 @@ function Player:registerPoint(x, y)
 		local point = drawing.points[index]
 		
 		point.i1 = tfm.exec.addImage(
-			"185e1bf0bb4.png", "!100", 
+			"185e1bf0bb4.png", "!2000", 
 			point.x, point.y,
 			self.name,
 			0.25, 0.25,
@@ -609,7 +797,7 @@ function Player:registerPoint(x, y)
 			local an = math.atan2(previous.y - point.y, previous.x - point.x)
 			
 			point.i2 = tfm.exec.addImage(
-				"185e1bebf8a.png", "!100",
+				"185e1bebf8a.png", "!4000",
 				point.x, point.y,
 				self.name,
 				sx, 0.25,
@@ -680,7 +868,7 @@ function Player:undoDrawingAction()
 		end
 	end
 	
-	printt(drawing)
+	--printt(drawing)
 	
 	self:setKeepDrawing(true)
 end
@@ -698,7 +886,7 @@ function Player:removePoint(id)
 		
 		local line = drawing.lines[point.lineId]
 		if line then
-			table.remove(line, #line - offset)
+			table.remove(line, #line)
 			
 			if #line == 0 then
 				self:removeLine(point.lineId)
@@ -902,6 +1090,7 @@ function Player:closeDrawing()
 		tfm.exec.freezePlayer(self.name, false, false)
 		
 		self.drawing.active = false
+		self:placeMainNpc("village")
 	end
 	
 	-- Remove line images, to do
@@ -910,21 +1099,22 @@ function Player:closeDrawing()
 		if point.i1 then tfm.exec.removeImage(point.i1, false) end
 		if point.i2 then tfm.exec.removeImage(point.i2, false) end
 	end
-	if self.drawing.keepDrawingId then tfm.exec.removeImage(self.drawing.keepDrawingId) end
+	self:showDrawingInterface(false)
+	
 	self.drawing.lines = {}
 	self.drawing.points = {}
 	self.drawing.active = false
 	
-	HanPreview:hide(playerName)
+	HanPreview:hide(self.name)
 	
 	self:hideOffscreen(false)
-	--self:showCrafting(true)
+	self:showLampInterface(true)
 end
 
 function Player:initInventory()
 	local size = #enum.items
 	local sqr = 40
-	local sep = 10
+	local sep = 23
 	
 	local width = (sqr * size) + (sep * (size - 1))
 	local xo = 400 - (width / 2)
@@ -940,7 +1130,7 @@ function Player:initInventory()
 			key = item.name,
 			
 			dx = xo + (sqr * i) + (sep * i),
-			dy = 350,
+			dy = 352,
 			dscale = 0.5, -- 0.
 			
 			data = "i" .. index,
@@ -957,6 +1147,7 @@ function Player:showCrafting(show)
 	if not self.crafting.active then return end
 	
 	if show then
+		self:showLampInterface(false)
 		self:showCrafting(false)
 		if self.crafting.size == 3 then
 			self.crafting.imageId = tfm.exec.addImage(
@@ -996,6 +1187,8 @@ function Player:showCrafting(show)
 				)
 			end
 		end
+		
+		self:showInventory(true)
 	else
 		if self.crafting.imageId then
 			self.crafting.imageId = tfm.exec.removeImage(self.crafting.imageId, true)
@@ -1008,6 +1201,8 @@ function Player:showCrafting(show)
 				self.crafting[i].spriteId = tfm.exec.removeImage(self.crafting[i].spriteId, false)
 			end
 		end
+		
+		self:showInventory(false)
 	end
 end
 
@@ -1075,7 +1270,6 @@ function Player:closeCrafting()
 	end
 	
 	self:showCrafting(false)
-	
 	self.crafting = {}
 	
 	self.crafting.active = false
@@ -1087,7 +1281,7 @@ function Player:showInventoryItem(id, show)
 		if item.amount > 0 then
 			item.spriteId = tfm.exec.addImage(
 				item.sprite,
-				":10",
+				"~10",
 				item.dx, item.dy,
 				self.name,
 				item.dscale, item.dscale,
@@ -1097,6 +1291,15 @@ function Player:showInventoryItem(id, show)
 			)
 			
 			if item.amount > 1 then
+				ui.addTextArea(
+					5010 + id,
+					("<p align='right'><font size='18'>%s</font></p>"):format(styles.invqd:format(item.amount)),
+					self.name,
+					item.dx+2, item.dy + 22,
+					35, 0,
+					0x0, 0x0,
+					1.0, true
+				)
 				ui.addTextArea(
 					5000 + id,
 					("<p align='right'><font size='18'>%s</font></p>"):format(styles.invq:format(item.amount)),
@@ -1116,6 +1319,7 @@ function Player:showInventoryItem(id, show)
 		end
 		
 		ui.removeTextArea(5000 + id, self.name)
+		ui.removeTextArea(5010 + id, self.name)
 		ui.removeClickable(100 + id, self.name)
 		
 		if show == nil then
@@ -1129,20 +1333,21 @@ function Player:showInventoryItem(id, show)
 end
 
 function Player:showInventory(show)
-	if show then
+	if show and not self.drawing.active then
 		self.items.displaying = true
 		
-		self.items.coverId = 800
-		ui.addTextArea(800, "", self.name, 125, 350, 550, 55, 0x7d4f4f, 0xb57474, 1.0, true)
-		--[[self.items.coverId = tfm.exec.addImage(
-			"TO DEFINE", ":1",
-			"TO DEFINE", "TO DEFINE", -- X, Y
+		if self.items.coverId then
+			tfm.exec.removeImage(self.items.coverId)
+		end
+		self.items.coverId = tfm.exec.addImage(
+			"185e53cdfa2.png", ":1",
+			400, 320, -- X, Y
 			self.name,
-			"TO DEFINE", "TO DEFINE",
+			1.0, 1.0,
 			0, 1.0, 
-			0.0, 0.0,
+			0.5, 0.0,
 			true
-		)]]
+		)
 		
 		for i, item in ipairs(self.items) do
 			self:showInventoryItem(i, nil)
@@ -1155,7 +1360,7 @@ function Player:showInventory(show)
 		end
 		
 		if self.items.coverId then
-			self.items.coverId = ui.removeTextArea(800, self.name)
+			self.items.coverId = tfm.exec.removeImage(self.items.coverId, true)
 			--self.items.coverId = tfm.exec.removeImage(self.items.coverId, true)
 		end
 		
@@ -1390,20 +1595,22 @@ function Player:hideRecipe(r)
 	-- ...
 end
 
-function Player:assertRecipe(recipe)
+function Player:assertRecipe(recipe, onInv)
 	recipe = self:convertRecipe(recipe)
 		
 	if not recipe then return false, 0 end
-	if not self.crafting.active then return false, 0 end
+	local stack = onInv and self.items or self.crafting
+	if not onInv and not self.crafting.active then return false, 0 end
 	
 	local isAvailable = true
 	local hasMatch
+	
 	for _, item in next, recipe.craft do
 		hasMatch = false
-		for i = 1, #self.crafting - 1 do
-			if item.id == self.crafting[i].id then
+		for i = 1, #stack - (onInv and 0 or 1) do
+			if item.id == stack[i].id then
 				
-				if item.amount > self.crafting[i].amount then
+				if item.amount > stack[i].amount then
 					isAvailable = false
 					break
 				end
@@ -1420,14 +1627,14 @@ function Player:assertRecipe(recipe)
 	return isAvailable, recipe.result
 end
 
-function Player:fetchRecipes(returnAll)
+function Player:fetchRecipes(returnAll, onInv)
 	local recipes = {}
 	
 	local isAvailable
 	local item
 	
 	for index, recipe in next, enum.recipes do
-		isAvailable = self:assertRecipe(recipe)
+		isAvailable = self:assertRecipe(recipe, onInv)
 		
 		if isAvailable or returnAll then
 			recipes[#recipes + 1] = {
@@ -1440,21 +1647,16 @@ function Player:fetchRecipes(returnAll)
 	return recipes
 end
 
-function Player:newDialog(npcName, dialogId, noDist)
+function Player:newDialog(dialogId, noDist)
 	if self.onDialog then
 		self:closeDialog()
 	end
-
-    local Npc = npcList[npcName]
-	if not Npc then return end
-	
 	
     self.onDialog = {
 		oldCursor = 1,
 		cursor = 1,
-		Text = "",
+		Text = Text:get("truffle " .. dialogId, self.language),
 		pInf = {},
-		Npc = {},
 		currentText = "",
 		displayText = "",
 		directAccess = 0,
@@ -1475,9 +1677,9 @@ function Player:setDialogDisplay(instruction)
 
 	if Dialog then
 		if instruction == "new" then
-			local id = tfm.exec.addImage(Dialog.sprite, ":1", 25, 394, self.name, 0.25, 0.25, 0, 1.0, 0, 1.0, true)
+			local id = tfm.exec.addImage(Dialog.sprite, ":1", 50, 394, self.name, 1.0, 1.0, 0, 1.0, 0, 1.0, true)
 			Dialog.directAccess = 2000 + (id or 0)
-			ui.addTextArea(Dialog.directAccess, "", self.name, 50, 335, 685, 38, 0x0, 0x0, 1.0, true)
+			ui.addTextArea(Dialog.directAccess, "", self.name, 60, 335, 535, 38, 0x0, 0x0, 1.0, true)
 
 			self:setDialogDisplay("next")
 		elseif instruction == "update" then
@@ -1574,37 +1776,7 @@ function Player:onDialogFinished()
 
 	if Dialog then
 		Dialog.finished = true
-		local showOpts = false
-		
-		if showOpts then
-			--[[
-			if not self.seekingInstrument.onIt then
-				ui.addTextArea(
-					Dialog.directAccess + 1,
-					styles.refdlg:format(Dialog.Npc.key .. "-" .. o1, translate("instruct " .. o1, self.language, self.gender)),
-					self.name,
-					x - 50, y,
-					100, 0,
-					ts, ts,
-					0.4, true
-				)
-
-
-			end
-
-			ui.addTextArea(
-				Dialog.directAccess + 2,
-				styles.refdlg:format(Dialog.Npc.key .. "-" .. o2, translate("instruct " .. o2, self.language, self.gender)),
-				self.name,
-				x + 50, y,
-				100, 0,
-				ts, ts,
-				0.4, true
-			)
-
-			print("[Debug] Dialog Npc key: " .. Dialog.Npc.key)
-			]]
-		else
+		do
 			if Dialog.timerId then
 				Timer.remove(Dialog.timerId)
 			end
@@ -1623,14 +1795,16 @@ function Player:closeDialog()
         end
 		tfm.exec.removeImage(Dialog.directAccess - 2000, true)
 
-		self:onDialogClosed(Dialog.Npc.key, Dialog.pInf)
+		self:onDialogClosed(Dialog.pInf)
     end
 
 	self.onDialog = false
 end
 
-function Player:onDialogClosed(npcName, pid)
-	-- Placeholder
+function Player:onDialogClosed(pid)
+	if self.Npc.place == "entrance" then
+		self:placeMainNpc("village")
+	end
 end
 
 --[[

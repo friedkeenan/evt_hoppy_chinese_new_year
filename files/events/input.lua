@@ -30,32 +30,29 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 				player:updateDialog(0)
 			end
 		else
-			if key == 48 then -- REMEBER TO DELETE
-				--[[if player.drawing.active then
-					player:finishDrawing()
-				else
-					player:initDrawing()
-				end--]]
-				
-				--[[]]if player.crafting.active then
-					player:closeCrafting()
-				else
-					player:setCrafting(3)
-				end--]]
-			end
-			if player.drawing.active then
-				if key == 32 then
-					player:setKeepDrawing(nil)
-				elseif key == 88 then -- [Z]
-					player:undoDrawingAction()
-				end
+			if key == 3 then
+				player:talkToNpc(x, y)
 			else
-				if key == 32 then
-					player:placeLamp(x, y)
+				if player.drawing.active then
+					if key == 32 then
+						player:setKeepDrawing(nil)
+					elseif key == 88 then -- [Z]
+						player:undoDrawingAction()
+					end
+				else
+					if key == 32 then
+						player:placeLamp(x, y)
+					end
 				end
-			end
-			if key > 48 and key <= 57 then
-				player:setSelectedSlot(key - 48, false)
+				if key > 48 and key <= 57 then
+					player:setSelectedSlot(key - 48, false)
+				else
+					if player.interface then
+						if key ~= 3 then
+							player:showLampInterface(false)
+						end
+					end
+				end
 			end
 			
 			if key == 69 then -- [E]
@@ -71,6 +68,8 @@ function eventMouse(playerName, x, y)
 	if player then
 		if player.drawing.active then
 			player:registerPoint(x, y)
+		elseif player.crafting.active then
+			player:closeCrafting()
 		end
 	end
 end
@@ -108,11 +107,23 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 		
 			if not re then
 				player:pushItem(id, false)
+				if id == player.crafting.size + 1 and player.crafting.size == 5 then
+					player:closeCrafting()
+					player:showLampInterface(true)
+				end
 			end
 		end
+	elseif eventName == "craft_a_lamp" then
+		player:setCrafting(5)
+	elseif eventName == "craft_a_lamp_draw" then
+		player:setCrafting(3)
+	elseif eventName == "draw_send" then
+		player:finishDrawing()
+	elseif eventName == "draw_undo" then
+		player:undoDrawingAction()
 	end
 end
-
+ 
 function eventChatCommand(playerName, message)
 	if noTimeLeft then return end
 	local player = playerList[playerName]

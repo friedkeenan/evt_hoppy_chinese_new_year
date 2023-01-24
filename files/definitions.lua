@@ -2,7 +2,12 @@ styles = {}
 
 styles.regular = "<font face='Century Schoolbook,Baskerville,Baskerville Old Face,Hoefler Text,Garamond,Times New Roman,serif'>%s</font>"
 styles.chat = "<font color='#FE5148'>%s</font>"
-styles.invq = styles.regular:format("<D>%d</D>")
+styles.invq = styles.regular:format("<D>%s</D>")
+styles.invqd = styles.regular:format("<font color='#3F0000'><b>%s</b></font>")
+styles.ititle = styles.invq:format("<font size='28'><p align='center'>%s</p></font>")
+styles.drawui = styles.invq:format("<font size='14.5'><p align='center'><a href='event:%s'>%s</a></p></font>")
+styles.ilist = styles.regular:format("<font color='#FFFFFF' size='20'><b>%s</b></font>")
+styles.dialogue = styles.regular:format("<font color='#3F0000'></font>")
 
 enum.items = {
 	[1] = {
@@ -1921,7 +1926,7 @@ function HanPreview:show(playerName, hanId, xc, yc, lines)
 				y = yc + point.y
 				
 				id1 = tfm.exec.addImage(
-					"185cd3b62c5.png", "!100", 
+					"185cd3b62c5.png", "!2000", 
 					x, y,
 					playerName,
 					0.25, 0.25,
@@ -1932,7 +1937,7 @@ function HanPreview:show(playerName, hanId, xc, yc, lines)
 				
 				ui.addTextArea(
 					15000 + tc, 
-					styles.regular:format(("<CEP>%d</CEP>"):format(pointId)),
+					styles.regular:format(("<font color='#FFFFFF'>%d</font>"):format(pointId)),
 					playerName,
 					x+5, y+5,
 					0, 0,

@@ -1,6 +1,7 @@
 Text["en"] = {
 	title = "Hoppy Chinese New Year !",
 	items = {
+		desc = "Materials",
 		rope = "Rope",
 		wood = "Wood",
 		scissors = "Scissors",
@@ -21,17 +22,21 @@ Text["en"] = {
 	},
 	craft = {
 		instruct = "Click on Items to drag them between your Inventory and the Crafting Table",
+		lamp = "Craft Lamp"
 		
 	},
 	install = "Hop over the Village and install the Lamp you just finished!",
 	draw = {
 		instruct = "Draw the Chinese word over the Lamp !",
 		finish_line = "You can finish a Line by pressing space.",
-		button = "Draw",
+		lamp = "Draw on Lamp",
 		finish = "Finish Drawing",
 		undo = "Undo Trace",
 		isbad = "You didn't draw the word correctly. Try again.",
 		isgood = "Excellent drawing!"
+	},
+	truffle = {
+		[1] = {"Placeholder"},
 	}
 }
 

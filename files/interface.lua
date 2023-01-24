@@ -17,11 +17,11 @@ ui.addClickable = function(id, xPosition, yPosition, width, height, targetPlayer
 	id = (id or 0) + 25000
 	ui.addTextArea(
 		id,
-		("<textformat leftmargin='1' rightmargin='1'><a href='event:%s'>%s</a></textformat>"):format(event or "clickable", ("\n"):rep(20)),
+		("<textformat leftmargin='1' rightmargin='1'><a href='event:%s'>%s</a></textformat>"):format(event or "clickable", ("\n"):rep(40)),
 		targetPlayer,
 		xPosition, yPosition,
 		width, height,
-		0xFF00FF, 0xFF00FF,--0x0, 0x0,
+		0x0, 0x0,
 		0.33, fixedPos
 	)
 	
