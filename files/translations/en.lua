@@ -2,29 +2,22 @@ Text["en"] = {
 	title = "Hoppy Chinese New Year !",
 	items = {
 		rope = "Rope",
-		rope_find = "Ropes can usually be found on high places, like the top-most part of a cascade or inside a tree.",
-		
 		wood = "Wood",
-		wood_find = "Wood can usually be found near to vegetation, as in places like big trees.",
-		
 		scissors = "Scissors",
-		scissors_find = "Scissors are usually found on the Village.",
-		
 		glue = "Glue",
-		glue_find = "Glue can usually be found on the roof of houses and structures.",
-		
 		paper = "Paper",
-		paper_find = "Paper can usually be found on the top-most part of trees.",
-		
 		paint = "Paint",
-		paint_find = "Paint can usually be found nearby water, or near lamps.",
-		
 		paint_brush = "Paint Brush",
-		paint_brush_find = "Paint brush is sneaky. It could be anywhere.",
-		
-		
 		lamp = "Lamp",
 		lamp_final = "Finished Lamp"
+	},
+	tips = {
+		materials = {
+			"Paper, ropes and wood can be found nearby trees.",
+			"Scissors and glue are usually found on the Village.",
+			"Paint can usually be found near to water or lamps.",
+			"The Paint brush is sneaky. It could be anywhere. Hop over the map to find it!"
+		}
 	},
 	craft = {
 		instruct = "Click on Items to drag them between your Inventory and the Crafting Table",

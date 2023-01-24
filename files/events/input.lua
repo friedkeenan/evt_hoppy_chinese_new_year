@@ -19,6 +19,7 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 		end
 		
 		player:updatePosition(x, y, vx, vy, fr, m)
+		player.ef = nil
 	end
 	
 	
@@ -39,7 +40,7 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 				--[[]]if player.crafting.active then
 					player:closeCrafting()
 				else
-					player:setCrafting(5)
+					player:setCrafting(3)
 				end--]]
 			end
 			if player.drawing.active then
@@ -97,7 +98,17 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 	elseif eventName == "craft_action" then
 		local id = textAreaId % 10
 		if player.crafting.active then
-			player:pushItem(id, false)
+			local re = false
+			if player.crafting.size == 3 then
+				if player.crafting[4].id == 9 then
+					re = true
+					player:initDrawing()
+				end
+			end
+		
+			if not re then
+				player:pushItem(id, false)
+			end
 		end
 	end
 end
@@ -204,5 +215,49 @@ function eventPlayerBonusGrabbed(playerName, bonusId)
 	
 	if player then
 		player:collectMapItem(bonusId%100)
+	end
+end
+
+do
+	local z = {
+		[1] = {
+			x1 = 0,
+			x2 = 280,
+			
+			y1 = 0,
+			y2 = 330
+		},
+		[2] = {
+			x1 = 210,
+			x2 = 834,
+			y1 = 247,
+			y2 = 535
+		},
+		[3] = {
+			x1 = 1005,
+			y1 = 0,
+			
+			x2 = 1333,
+			y2 = 409
+		}
+	}
+	function eventEmotePlayed(playerName, emoteType, emoteParam)
+		local player = playerList[playerName]
+		
+		if player then
+			if emoteType == tfm.enum.emote.sleep then
+				for i, s in ipairs(z) do
+					if (player.x >= s.x1) and (player.x <= s.x2) then
+						if (player.y >= s.y1) and (player.y <= s.y2) then
+							player.ef = s
+							player.ef.t = os.time() + 1000
+							break
+						end
+					end
+				end
+			else
+				player.ef = nil
+			end
+		end
 	end
 end

@@ -67,8 +67,13 @@ function Player:playBackgroundMusic(play)
 			"cite18/musique/museum.mp3",
 			"cite18/musique/museum2.mp3"
 		}
-			
-		local track = music[math.random(#music)]
+		
+		local track
+		if self:getData("finished") then
+			track = music[1]
+		else
+			track = music[math.random(#music)]
+		end
 			
 		self:playMusic(track, "Main", 50, true, true)
 	else
@@ -94,9 +99,9 @@ function Player:init(rawdata, reset)
 		self.progress.finished = self:getData("finished") or false
 	end
 	
-	--[[if self:getData("finished") then
-		self:resetDefaultData()
-	end]]
+	--if self:getData("finished") then
+	--	self:resetDefaultData()
+	--end
 	
 	self:initInventory()
 	
@@ -111,10 +116,15 @@ function Player:init(rawdata, reset)
 	}, self.name)
 
 	self:setLampsDisplay(true)
-	self:setMapItems()
-	self:showLampInstallPlace(true)
+	
+	if not self:getData("finished") then
+		self:setMapItems(true)
+		self:showLampInstallPlace(true)
+	end
 	
 	self:playBackgroundMusic(true)
+	
+	system.giveAdventurePoint(self.name, "evt_hoppy_cny_rounds", "1")
 end
 
 function Player:saveData()
@@ -140,6 +150,7 @@ function Player:resetAllData()
 	
 	self:setData("hans", 0, false)
 	self:setData("inst", 0, false)
+	self:setData("finished", false, false)
 	
 	self:saveData()
 end
@@ -244,42 +255,60 @@ function Player:handleNear(x, y, vx, vy)
 	end
 end
 
-function Player:setMapItems()
-	self.mapItems = {}
+function Player:setMapItems(set)
 	
-	local item = {}
-	for i=1, 7 do
-		item = enum.items[i]
-		local pos = item.pos[math.random(#item.pos)]
+	if set then
+		self.mapItems = {}
 		
-		tfm.exec.addBonus(0, pos.x, pos.y, 100 + i, 0, false, self.name)
-		local id = tfm.exec.addImage(item.sprite, "_50", pos.x, pos.y, self.name, 0.25, 0.25, 0, 1.0, 0.5, 0.5, false)
-		self.mapItems[i] = {
-			x = pos.x,
-			y = pos.y,
-			imageId = id,
-			active = true
-		}
+		local item = {}
+		for i=1, 7 do
+			item = enum.items[i]
+			local pos = item.pos[math.random(#item.pos)]
+			
+			tfm.exec.addBonus(0, pos.x, pos.y, 100 + i, 0, false, self.name)
+			local id = tfm.exec.addImage(item.sprite, "_50", pos.x, pos.y, self.name, 0.375, 0.375, 0, 1.0, 0.5, 0.5, false)
+			self.mapItems[i] = {
+				x = pos.x,
+				y = pos.y,
+				imageId = id,
+				active = true
+			}
+		end
+	else
+		if self.mapItems then
+			for index, Item in ipairs(self.mapItems) do
+				Item.active = false
+				tfm.exec.removeBonus(100 + index, self.name)
+				if Item.imageId then
+					Item.imageId = tfm.exec.removeImage(Item.imageId, false)
+				end
+			end
+		end
 	end
 end
 
 function Player:collectMapItem(itemId)
 	local mi = self.mapItems[itemId]
-	if mi.active then
+	if mi and mi.active then
 		self:insertItem(itemId, 1)
+		system.giveAdventurePoint(self.name, "evt_hoppy_cny_materials", "1")
+		
 		
 		tfm.exec.removeBonus(100 + itemId, self.name)
 		tfm.exec.removeImage(mi.imageId, false)
 		
-		local item = enum.items[itemId]
 		
 		for i=1, math.random(4, 6) do
 			tfm.exec.displayParticle(tfm.enum.particle.cloud, mi.x, mi.y, math.random(-10, 10)/10, math.random(-10,10)/10, 0, 0, self.name)
 		end
 		self:playSound("cite18/lance.mp3", 40, nil, nil)
-		tfm.exec.addImage(item.sprite, "_50", mi.x, mi.y, self.name, 0.25, 0.25, 0, 0.33, 0.5, 0.5, false)
 		
-		self:setHoldingItem(show)
+		local item = enum.items[itemId]
+		
+		tfm.exec.addImage(item.sprite, "_50", mi.x, mi.y, self.name, 0.375, 0.375, 0, 0.33, 0.5, 0.5, false)
+		
+		self:setHoldingItem(true)
+		
 		mi.active = false
 	end
 end
@@ -312,7 +341,7 @@ function Player:setLampsDisplay(display)
 		if display then
 			local installed = self:getData("inst" or 0)
 			local lamp
-			for i=1, installed do
+			for i=1, math.min(installed, #enum.lamp) do
 				lamp = enum.lamp[i]
 				self.lampsIds[i] = tfm.exec.addImage(
 					lamp.sprite or enum.items.lamp.sprite,
@@ -352,23 +381,46 @@ function Player:showLampInstallPlace(show)
 	end
 end
 
+local pencil_ids = {
+	2252,
+	2256,
+	2349,
+	2379,
+	2513,
+	2514
+}
+
 function Player:placeLamp(x, y)
 	local lampId = self:getData("inst") + 1
 	
 	if lampId <= #enum.lamp and self.items[9].amount > 0 then
 		local lamp = enum.lamp[lampId]
 		
-		if math.pythag(x, y, lamp.x, lamp.y) <= 45 then
+		if math.pythag(x, y, lamp.x, lamp.y) <= 45 then -- Success
 			self:extractItem(9, 1)
 			self:setData("inst", lampId, true)
+			system.giveAdventurePoint(self.name, "evt_hoppy_cny_installed", "1")
+			system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
 			
+			
+			
+			self:setLampsDisplay(lampId)
 			do
 				self:playSound("cite18/fleche4.mp3", 55, nil, nil)
 				self:playSound("cite18/flamme.mp3", 55, nil, nil)
+				local pr = {2, 11, 13}
+				
+				for i=1, math.random(6, 9) do
+					local e = math.random(-20, 20)/10
+					tfm.exec.displayParticle(pr[math.random(#pr)], lamp.x, lamp.y, e, -1.7, -e/20, math.random(20, 35)/100, self.name)
+				end
 			end
-			
-			self:setLampsDisplay(lampId)
 			self:showLampInstallPlace(true)
+			
+			if lampId % 4 == 0 then
+				local ccid = math.ceil(lampId / 4)
+				tfm.exec.giveConsumables(self.name, pencil_ids[ccid], 5)
+			end
 			
 			
 			if lampId == #enum.lamp then
@@ -382,6 +434,10 @@ function Player:finishEvent()
 	self:playSound("tfmadv/niveausup.mp3", 100, nil, nil)
 	self:playBackgroundMusic(true)
 	self:setData("finished", true, true)
+	
+	self:setMapItems(false)
+	self:closeDrawing()
+	self:closeCrafting()
 end
 
 function Player:initDrawing(xp, yp)
@@ -404,8 +460,9 @@ function Player:initDrawing(xp, yp)
 		self:playBackgroundMusic(false)
 	end
 	
-	self:previewLineToDraw()
+	self:showCrafting(false)
 	self:hideOffscreen(true, 0x010101)
+	self:previewLineToDraw()
 end
 
 function Player:setKeepDrawing(set)
@@ -495,7 +552,7 @@ function Player:registerPoint(x, y)
 		local point = drawing.points[index]
 		
 		point.i1 = tfm.exec.addImage(
-			"185cd3b62c5.png", "!100", 
+			"185e1bf0bb4.png", "!100", 
 			point.x, point.y,
 			self.name,
 			0.25, 0.25,
@@ -511,7 +568,7 @@ function Player:registerPoint(x, y)
 			local an = math.atan2(previous.y - point.y, previous.x - point.x)
 			
 			point.i2 = tfm.exec.addImage(
-				"185cd3b163f.png", "!100",
+				"185e1bebf8a.png", "!100",
 				point.x, point.y,
 				self.name,
 				sx, 0.25,
@@ -715,6 +772,16 @@ function Player:correctDrawing(han) -- Regulate drawing: scale, pos
 	end
 end
 
+function Player:drawingSuccess()
+	if self.crafting.active and self.crafting.size == 3 and self.drawing.active then
+		self:setData("hans", self.drawing.hanId, true)
+		self:pushItem(4, false) -- self:insertItem(9, 1)
+		system.giveAdventurePoint(self.name, "evt_hoppy_cny_drawn", "1")
+		system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
+		self:playSound("deadmaze/niveau/gain_niveau.mp3", 100, nil, nil)
+	end
+end
+
 function Player:finishDrawing()
 	local han = enum.han[self.drawing.hanId]
 	
@@ -722,10 +789,7 @@ function Player:finishDrawing()
 	self:correctDrawing(han)
 	
 	if self:assertDrawing(han) then
-		--printf("Your drawing is correct for this Han")
-		self:setData("hans", self.drawing.hanId, true)
-		self:insertItem(9, 1)
-		self:playSound("deadmaze/niveau/gain_niveau.mp3", 100, nil, nil)
+		self:drawingSuccess()
 	else
 		printf("Your drawing is bad.")
 	end
@@ -813,6 +877,7 @@ function Player:closeDrawing()
 	HanPreview:hide(playerName)
 	
 	self:hideOffscreen(false)
+	--self:showCrafting(true)
 end
 
 function Player:initInventory()
@@ -847,8 +912,65 @@ function Player:initInventory()
 	end
 end
 
-function Player:setCrafting(size)
+function Player:showCrafting(show)
+	if not self.crafting.active then return end
 	
+	if show then
+		self:showCrafting(false)
+		if self.crafting.size == 3 then
+			self.crafting.imageId = tfm.exec.addImage(
+				"185da67352b.png", ":12",
+				400, 180,
+				self.name,
+				self.crafting.dscale, self.crafting.dscale,
+				0, 1.0,
+				0.5, 0.5,
+				true
+			)
+		elseif self.crafting.size == 5 then
+			self.crafting.imageId = tfm.exec.addImage(
+				"185dbe49fd1.png", ":12", 
+				400, 190, 
+				self.name, 
+				self.crafting.dscale, self.crafting.dscale, 
+				0, 1.0, 
+				0.5, 0.5, 
+				true
+			)
+		end
+		
+		for id, item in ipairs(self.crafting) do
+			ui.addClickable(300 + id, item.dx, item.dy, 80 * item.dscale, 80 * item.dscale, self.name, "craft_action", true)
+			
+			if item.id ~= 0 then
+				item.sprite = self.items[item.id].sprite
+				item.spriteId = tfm.exec.addImage(
+					item.sprite, ":1",
+					item.dx, item.dy,
+					self.name,
+					item.dscale, item.dscale,
+					0.0, 1.0,
+					0.0, 0.0,
+					false
+				)
+			end
+		end
+	else
+		if self.crafting.imageId then
+			self.crafting.imageId = tfm.exec.removeImage(self.crafting.imageId, true)
+		end
+		
+		for i = 1, #self.crafting do
+			ui.removeClickable(300 + i, self.name)
+			
+			if self.crafting[i].spriteId then
+				self.crafting[i].spriteId = tfm.exec.removeImage(self.crafting[i].spriteId, false)
+			end
+		end
+	end
+end
+
+function Player:setCrafting(size)
 	local ms
 	local slots = {}
 	local xc, yc
@@ -861,7 +983,7 @@ function Player:setCrafting(size)
 		}
 		xc = 365
 		yc = 180
-		self.crafting.imageId = tfm.exec.addImage("185da67352b.png", ":12", 400, 180, self.name, ms, ms, 0, 1.0, 0.5, 0.5, true)
+		
 	elseif size == 5 then
 		ms = 0.85
 		slots = {
@@ -873,7 +995,6 @@ function Player:setCrafting(size)
 		}
 		xc = 375
 		yc = 180
-		self.crafting.imageId = tfm.exec.addImage("185dbe49fd1.png", ":12", 400, 190, self.name, ms, ms, 0, 1.0, 0.5, 0.5, true)
 	end
 	
 	for i=1, size do
@@ -882,44 +1003,37 @@ function Player:setCrafting(size)
 			dy = slots[i].y - (20 * ms),
 			id = 0,
 			amount = 0,
-			dscale = 0.35 * ms,
+			dscale = 0.35 * ms^2,
 			sprite = nil,
 			spriteId = -1
 		}
 	end
 	
+	self.crafting.dscale = ms
 	self.crafting[size + 1] = {
 		dx = xc,
 		dy = yc,
 		id = 0,
 		amount = 0,
-		dscale = 0.9 * ms,
+		dscale = 0.9 * ms^2,
 		sprite = nil,
 		spriteId = -1
 	}
 	
-	for i = 1, #self.crafting do
-		local slot = self.crafting[i]
-		ui.addClickable(300 + i, slot.dx, slot.dy, 80 * slot.dscale * ms, 80 * slot.dscale * ms, self.name, "craft_action", true)
-	end
 	self.crafting.active = true
 	self.crafting.size = size
+	
+	self:showCrafting(true)
 end
 
 function Player:closeCrafting()
-	if self.crafting.imageId then
-		self.crafting.imageId = tfm.exec.removeImage(self.crafting.imageId, true)
-	end
-	for i = 1, #self.crafting do
-		ui.removeClickable(300 + i, self.name)
+	for i=1, #self.crafting do
 		if i ~= #self.crafting then
 			self:pushItem(i, false)
-		else
-			if self.crafting[#self.crafting].spriteId then
-				tfm.exec.removeImage(self.crafting[#self.crafting].spriteId, false)
-			end
 		end
 	end
+	
+	self:showCrafting(false)
 	
 	self.crafting = {}
 	
@@ -977,7 +1091,9 @@ function Player:showInventory(show)
 	if show then
 		self.items.displaying = true
 		
-		self.items.coverId = tfm.exec.addImage(
+		self.items.coverId = 800
+		ui.addTextArea(800, "", self.name, 125, 350, 550, 55, 0x7d4f4f, 0xb57474, 1.0, true)
+		--[[self.items.coverId = tfm.exec.addImage(
 			"TO DEFINE", ":1",
 			"TO DEFINE", "TO DEFINE", -- X, Y
 			self.name,
@@ -985,7 +1101,7 @@ function Player:showInventory(show)
 			0, 1.0, 
 			0.0, 0.0,
 			true
-		)
+		)]]
 		
 		for i, item in ipairs(self.items) do
 			self:showInventoryItem(i, nil)
@@ -998,7 +1114,8 @@ function Player:showInventory(show)
 		end
 		
 		if self.items.coverId then
-			self.items.coverId = tfm.exec.removeImage(self.items.coverId, true)
+			self.items.coverId = ui.removeTextArea(800, self.name)
+			--self.items.coverId = tfm.exec.removeImage(self.items.coverId, true)
 		end
 		
 		if show == nil then
@@ -1178,7 +1295,11 @@ function Player:insertItem(itemId, amount)
 		if self.items.displaying then
 			self:showInventoryItem(itemId, nil)
 		end
-		if item.id == 9 then
+		
+		if item.id == 8 then
+			system.giveAdventurePoint(self.name, "evt_hoppy_cny_lamps", "1")
+			system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
+		elseif item.id == 9 then
 			self:showLampInstallPlace(true)
 		end
 		

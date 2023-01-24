@@ -1,4 +1,8 @@
 local time_count = 0
+local ptt = {21, 43, 44, 51, 13}
+function ptt:random()
+	return self[math.random(#self)]
+end
 function eventLoop(elapsed, remaining)
 	time_count = time_count + 500
 	Timer.handle()
@@ -13,6 +17,38 @@ function eventLoop(elapsed, remaining)
 			if player.drawing.active then
 				if player.drawing.keep_drawing then
 					player:playSound("deadmaze/objectif.mp3", 100, nil, nil)
+				end
+			end
+			
+			if player.ef then
+				if os.time() > player.ef.t then
+					local c = player.ef
+					local list = {}
+					local dp = function(...)
+						list[#list + 1] = {...}
+					end
+					local xs = 25
+					local ys = 55
+					for x=1, math.ceil(c.x2 - c.x1)/xs do
+						for y=1, math.ceil(c.y2 - c.y1)/ys do
+							local d = (math.random(2) == 1 and tfm.exec.displayParticle or dp)
+							d(
+								ptt:random(),
+								c.x1 + ((x-1) * xs) + math.random(-xs/2, xs/2),
+								c.y1 + ((y-1) * ys) + math.random(-ys/2, ys/2),
+								0,
+								math.random(2, 12) / 10,
+								0,
+								-0.005,
+								playerName
+							)
+						end
+					end
+					Timer.new(500, false, function()
+						for _, v in ipairs(list) do
+							tfm.exec.displayParticle(v[1], v[2], v[3], 0, v[5], 0, v[7], playerName)
+						end
+					end)
 				end
 			end
 		end
