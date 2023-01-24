@@ -134,10 +134,12 @@ function Player:init(rawdata, reset)
 end
 
 function Player:saveData()
-	local rawdata = data.encode(self.progress)
-	self.dataFile = data.setToModule(self.dataFile, "HCNY", rawdata)
+	if self.dataFile then
+		local rawdata = data.encode(self.progress)
+		self.dataFile = data.setToModule(self.dataFile, "HCNY", rawdata)
 
-	system.savePlayerData(self.name, self.dataFile)
+		system.savePlayerData(self.name, self.dataFile)
+	end
 end
 
 function Player:resetDefaultData()
@@ -311,7 +313,12 @@ function Player:collectMapItem(itemId)
 		for i=1, math.random(4, 6) do
 			tfm.exec.displayParticle(tfm.enum.particle.cloud, mi.x, mi.y, math.random(-10, 10)/10, math.random(-10,10)/10, 0, 0, self.name)
 		end
-		self:playSound("cite18/lance.mp3", 40, nil, nil)
+		local sound = ({
+			"deadmaze/bruit/sac1.mp3",
+			"deadmaze/bruit/sac2.mp3",
+			"cite18/lance.mp3"
+		})[math.random(3)]
+		self:playSound(sound, 40, nil, nil)
 		
 		local item = enum.items[itemId]
 		
@@ -495,7 +502,7 @@ function Player:talkToNpc(x, y)
 				self:showLampInterface(true)
 			end
 		elseif Npc.place == "entrance" then
-			self:newDialog(1, false)
+			self:newDialog("welcome", false)
 		end
 	end
 end
@@ -521,7 +528,7 @@ function Player:showLampInterface(show)
 		self.interface = nil
 	end
 	
-	if show then
+	if show and not (self.drawing.active or self.crafting.active) then
 		self.interface = {{items={}}, {items={}}}
 		self.interface.mainId = tfm.exec.addImage("185e3742fcc.png", ":50", 400, 210, self.name, 0.95, 0.95, 0, 1.0, 0.5, 0.5, true)
 		
@@ -681,9 +688,7 @@ function Player:initDrawing(xp, yp)
 	}
 	
 	do
-		tfm.exec.freezePlayer(self.name, true, false)
-		tfm.exec.setPlayerGravityScale(self.name, 0, 0)
-		tfm.exec.movePlayer(self.name, self.x, self.y, false, 0, 0, false)
+		self:freeze(true)
 		
 		self:playBackgroundMusic(false)	
 		self:showDrawingInterface(true)
@@ -1017,18 +1022,22 @@ function Player:finishDrawing()
 	self:finishLine()
 	self:correctDrawing(han)
 	
-	if self:assertDrawing(han) then
+	local success = self:assertDrawing(han)
+	if success then
 		self:drawingSuccess()
+		ui.addTextArea(49, "", self.name, 5, 5, 790, 390, 0x0000FF, 0x0000FF, 0.15, true)
 	else
-		printf("Your drawing is bad.")
+		ui.addTextArea(49, "", self.name, 5, 5, 790, 390, 0xFF0000, 0xFF0000, 0.15, true)
+		self:playSound("deadmaze/combat/casse.mp3", 50, nil, nil)
 	end
 	
 	self.drawing.finished = true
 	
 	HanPreview:hide(self.name)
 	
-	Timer.new(1000, false, function()
-		self:closeDrawing()
+	Timer.new(2000, false, function()
+		self:closeDrawing(success)
+		ui.removeTextArea(49, self.name)
 	end)
 end
 
@@ -1083,11 +1092,10 @@ function Player:assertDrawing(han)
 	return true
 end
 
-function Player:closeDrawing()
+function Player:closeDrawing(success)
 	do
+		self:freeze(false)
 		self:playBackgroundMusic(true)
-		tfm.exec.setPlayerGravityScale(self.name, 1.0, 0.0)
-		tfm.exec.freezePlayer(self.name, false, false)
 		
 		self.drawing.active = false
 		self:placeMainNpc("village")
@@ -1108,7 +1116,23 @@ function Player:closeDrawing()
 	HanPreview:hide(self.name)
 	
 	self:hideOffscreen(false)
-	self:showLampInterface(true)
+	
+	if success then
+		self:newDialog(self.drawing.hanId)--self:showLampInterface(true)
+	else
+		self:showCrafting(true)
+	end
+end
+
+function Player:freeze(freeze)
+	if freeze then
+		tfm.exec.freezePlayer(self.name, true, false)
+		tfm.exec.setPlayerGravityScale(self.name, 0, 0)
+		tfm.exec.movePlayer(self.name, self.x, self.y, false, 0, 0, false)
+	else
+		tfm.exec.setPlayerGravityScale(self.name, 1.0, 0.0)
+		tfm.exec.freezePlayer(self.name, false, false)
+	end
 end
 
 function Player:initInventory()
@@ -1260,6 +1284,7 @@ function Player:setCrafting(size)
 	self.crafting.size = size
 	
 	self:showCrafting(true)
+	self:freeze(true)
 end
 
 function Player:closeCrafting()
@@ -1270,6 +1295,7 @@ function Player:closeCrafting()
 	end
 	
 	self:showCrafting(false)
+	self:freeze(false)
 	self.crafting = {}
 	
 	self.crafting.active = false
@@ -1652,10 +1678,26 @@ function Player:newDialog(dialogId, noDist)
 		self:closeDialog()
 	end
 	
+	local text, bunny
+	local hype = {
+		[3] = "185d44b62bb.png",
+		[2] = "185d44ac8b5.png",
+		[1] = "185d44b15b4.png"
+	}
+	
+	if type(dialogId) == "number" then
+		bunny = hype[enum.han[dialogId].hype]
+		local t = ("han %d desc"):format(dialogId)
+		text = Text:get(t, self.language, self.gender)
+	else
+		text = Text:get("truffle " .. dialogId, self.language, self.gender)
+		bunny = hype[3]
+	end
+	
     self.onDialog = {
 		oldCursor = 1,
 		cursor = 1,
-		Text = Text:get("truffle " .. dialogId, self.language),
+		Text = text,
 		pInf = {},
 		currentText = "",
 		displayText = "",
@@ -1666,6 +1708,7 @@ function Player:newDialog(dialogId, noDist)
 		completed = false,
 		pointer = 0,
 		sprite = "185d44bafbb.png",
+		bunny = bunny,
 		distHide = not noDist
     }
 
@@ -1677,9 +1720,11 @@ function Player:setDialogDisplay(instruction)
 
 	if Dialog then
 		if instruction == "new" then
-			local id = tfm.exec.addImage(Dialog.sprite, ":1", 50, 394, self.name, 1.0, 1.0, 0, 1.0, 0, 1.0, true)
+			local id = tfm.exec.addImage(Dialog.sprite, ":1", 450, 370, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
+			local id2 = tfm.exec.addImage(Dialog.bunny, ":10", 150, 350, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
+			Dialog.bunnyId = id2
 			Dialog.directAccess = 2000 + (id or 0)
-			ui.addTextArea(Dialog.directAccess, "", self.name, 60, 335, 535, 38, 0x0, 0x0, 1.0, true)
+			ui.addTextArea(Dialog.directAccess, "", self.name, 200, 315, 470, 131, 0x0, 0x0, 1.0, true)
 
 			self:setDialogDisplay("next")
 		elseif instruction == "update" then
@@ -1794,6 +1839,7 @@ function Player:closeDialog()
 			ui.removeTextArea(Dialog.directAccess + i, self.name)
         end
 		tfm.exec.removeImage(Dialog.directAccess - 2000, true)
+		tfm.exec.removeImage(Dialog.bunnyId, true)
 
 		self:onDialogClosed(Dialog.pInf)
     end

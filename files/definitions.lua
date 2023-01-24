@@ -7,7 +7,7 @@ styles.invqd = styles.regular:format("<font color='#3F0000'><b>%s</b></font>")
 styles.ititle = styles.invq:format("<font size='28'><p align='center'>%s</p></font>")
 styles.drawui = styles.invq:format("<font size='14.5'><p align='center'><a href='event:%s'>%s</a></p></font>")
 styles.ilist = styles.regular:format("<font color='#FFFFFF' size='20'><b>%s</b></font>")
-styles.dialogue = styles.regular:format("<font color='#3F0000'></font>")
+styles.dialogue = styles.regular:format("<font color='#3F0000' size='15'>%s</font>")
 
 enum.items = {
 	[1] = {
@@ -88,6 +88,7 @@ do
 	enum.han = {
 		[1] = {
 			name = "兔",
+			hype = 1,
 			sprite = "185e1af0068.png",
 			lines = {
 				[1] = { -- Line
@@ -133,6 +134,7 @@ do
 		},
 		[2] = {
 			name = "生肖",
+			hype = 3,
 			sprite = "185e1af4cbd.png",
 			lines = {
 				[1] = {
@@ -189,6 +191,7 @@ do
 		[3] = {
 			name = "鞭炮",
 			sprite = "185e1af99be.png",
+			hype = 2,
 			lines = {
 				[1] = {
 					{x=18, y=48},
@@ -315,6 +318,7 @@ do
 		[4] = {
 			name = "烟花",
 			sprite = "185e1afe6bd.png",
+			hype = 2,
 			lines = {
 				[1] = {
 					{x=10, y=78},
@@ -399,6 +403,7 @@ do
 		[5] = {
 			name = "唐装",
 			sprite = "185e1b033bb.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=102, y=0},
@@ -502,6 +507,7 @@ do
 		[6] = {
 			name = "舞狮",
 			sprite = "185e1b080c1.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=86, y=0},
@@ -612,6 +618,7 @@ do
 		[7] = {
 			name = "春节",
 			sprite = "185e1b0cdbb.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=61, y=32},
@@ -682,6 +689,7 @@ do
 		[8] = {
 			name = "灯笼",
 			sprite = "185e1b11abb.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=12, y=66},
@@ -766,6 +774,7 @@ do
 		[9] = {
 			name = "玉兔",
 			sprite = "185e1b167bd.png",
+			hype = 2,
 			lines = {
 				[1] = {
 					{x=51, y=39},
@@ -832,6 +841,7 @@ do
 		[10] = {
 			name = "对联",
 			sprite = "185e1b1b4c0.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=14, y=54},
@@ -915,6 +925,7 @@ do
 		[11] = {
 			name = "福",
 			sprite = "185e1b2dd0a.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=60, y=0},
@@ -977,6 +988,7 @@ do
 		[12] = {
 			name = "桔子",
 			sprite = "185e1b329cb.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=10, y=76},
@@ -1041,6 +1053,7 @@ do
 		[13] = {
 			name = "饺子",
 			sprite = "185e1b376c4.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=44, y=11},
@@ -1105,6 +1118,7 @@ do
 		[14] = {
 			name = "元宝",
 			sprite = "185e1b3c3c1.png",
+			hype = 2,
 			lines = {
 				[1] = {
 					{x=57, y=20},
@@ -1165,6 +1179,7 @@ do
 		[15] = {
 			name = "拜年",
 			sprite = "185e1b410cb.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=71, y=8},
@@ -1235,6 +1250,7 @@ do
 		[16] = {
 			name = "除夕",
 			sprite = "185e1b45dce.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=5 , y=40},
@@ -1304,6 +1320,7 @@ do
 		[17] = {
 			name = "祭祖",
 			sprite = "185e1b4aabb.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=59, y=5},
@@ -1403,6 +1420,7 @@ do
 		[18] = {
 			name = "剪纸",
 			sprite = "185e1b4f7bc.png",
+			hype = 2,
 			lines = {
 				[1] = {
 					{x=54, y=3},
@@ -1493,6 +1511,7 @@ do
 		[19] = {
 			name = "年",
 			sprite = "185e1b544c0.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=85, y=0},
@@ -1524,6 +1543,7 @@ do
 		[20] = {
 			name = "火锅",
 			sprite = "185e1b591bf.png",
+			hype = 2,
 			lines = {
 				[1] = {
 					{x=25, y=67},
@@ -1608,6 +1628,7 @@ do
 		[21] = {
 			name = "龙",
 			sprite = "185e1b60993.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=35, y=71},
@@ -1640,6 +1661,7 @@ do
 		[22] = {
 			name = "元宵节",
 			sprite = "185e1b655ba.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=53, y=31},
@@ -1735,6 +1757,7 @@ do
 		[23] = {
 			name = "季节",
 			sprite = "185e1b6a2b9.png",
+			hype = 3,
 			lines = {
 				[1] = {
 					{x=129, y=0},
@@ -1801,6 +1824,7 @@ do
 		[24] = {
 			name = "节日",
 			sprite = "185e1b6efbf.png",
+			hype = 1,
 			lines = {
 				[1] = {
 					{x=0, y=40},
