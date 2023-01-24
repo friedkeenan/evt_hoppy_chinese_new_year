@@ -12,7 +12,7 @@ enum.items = {
 	},
 	[2] = {
 		name = "wood",
-		sprite = "185cb47d130.png",
+		sprite = "185e397feb5.png",
 		pos = {}
 	},
 	[3] = {
@@ -27,7 +27,7 @@ enum.items = {
 	},
 	[5] = {
 		name = "paper",
-		sprite = "185cb47d130.png",
+		sprite = "185e397b1b5.png",
 		pos = {}
 	},
 	[6] = {
@@ -46,7 +46,7 @@ enum.items = {
 	},
 	[9] = {
 		name = "lamp_final",
-		sprite = "185d0ae4dd6.png"
+		sprite = "185e1b6a2b9.png"
 	}
 }
 

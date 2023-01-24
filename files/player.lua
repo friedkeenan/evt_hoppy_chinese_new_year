@@ -38,6 +38,11 @@ function Player:new(playerName)
 		},
 		crafting = {
 			active = false
+		},
+		Npc = {
+			x = 0,
+			y = 0,
+			isFacingRight = true
 		}
 	}, self)
 	
@@ -114,6 +119,7 @@ function Player:init(rawdata, reset)
 		lookAtPlayer = true,
 		interactive = true
 	}, self.name)
+	self:placeMainNpc("entrance")
 
 	self:setLampsDisplay(true)
 	
@@ -438,6 +444,41 @@ function Player:finishEvent()
 	self:setMapItems(false)
 	self:closeDrawing()
 	self:closeCrafting()
+end
+
+function Player:placeMainNpc(where)
+	local Npc = self.Npc
+	local x, y, facingRight
+	local sx
+	if where == "village" then
+		x = 891
+		y = 689
+		facingRight = false
+	elseif where == "entrance" or not where then
+		x = 553
+		y = 832
+		facingRight = false
+	elseif where == "toptree" then
+		x = 146
+		y = 314
+		facingRight = true
+	end
+	
+	sx = facingRight and 1.0 or -1.0
+	
+	Npc.sprite = "185e39764da.png"
+	Npc.x = x
+	Npc.y = y
+	Npc.isFacingRight = facingRight
+	
+	if Npc.imageId then
+		Npc.imageId = tfm.exec.removeImage(Npc.imageId, false)
+		ui.removeTextArea(900, self.name)
+		ui.removeTextArea(901, self.name)
+	end
+	Npc.imageId = tfm.exec.addImage(Npc.sprite, "_250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
+	ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, Npc.x-(43*-sx), Npc.y-36, 90, 0, 0x0, 0x0, 1.0, false)
+	ui.addTextArea(900, "<font color='#FFFFFF'><p align='center'>Truffle</p></font>", self.name, Npc.x-(45*-sx), Npc.y-38, 90, 0, 0x0, 0x0, 1.0, false)
 end
 
 function Player:initDrawing(xp, yp)
