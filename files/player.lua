@@ -307,7 +307,9 @@ function Player:collectMapItem(itemId)
 		
 		
 		tfm.exec.removeBonus(100 + itemId, self.name)
-		tfm.exec.removeImage(mi.imageId, false)
+		if mi.imageId then
+			mi.imageId = tfm.exec.removeImage(mi.imageId, false)
+		end
 		
 		
 		for i=1, math.random(4, 6) do
@@ -322,7 +324,7 @@ function Player:collectMapItem(itemId)
 		
 		local item = enum.items[itemId]
 		
-		tfm.exec.addImage(item.sprite, "_50", mi.x, mi.y, self.name, 0.375, 0.375, 0, 0.33, 0.5, 0.5, false)
+		mi.imageId = tfm.exec.addImage(item.sprite, "_50", mi.x, mi.y, self.name, 0.375, 0.375, 0, 0.33, 0.5, 0.5, false)
 		
 		self:setHoldingItem(true)
 		
@@ -351,7 +353,11 @@ function Player:setLampsDisplay(display)
 		)
 	else
 		for i=1, #self.lampsIds do
-			self.lampsIds[i] = tfm.exec.removeImage(self.lampsIds[i], false)
+			if self.lampsIds[i] then
+				tfm.exec.removeImage(self.lampsIds[i], false)
+			end
+			
+			self.lampsIds[i] = nil
 		end
 		
 	
@@ -517,9 +523,9 @@ function Player:showLampInterface(show)
 		end
 		
 		for i=1, 2 do
-			tfm.exec.removeImage(self.interface[i].iconId, true)
+			if self.interface[i].iconId then tfm.exec.removeImage(self.interface[i].iconId, true) end
 			for k, id in next, self.interface[i].items do
-				tfm.exec.removeImage(id, true)
+				if id then tfm.exec.removeImage(id, true) end
 				ui.removeTextArea(960 + k, self.name)
 			end
 			
@@ -654,16 +660,9 @@ function Player:showDrawingInterface(show)
 			ui.addTextArea(40, text, self.name, 660, y, 120, 200, 0x0, 0x0, 1.0, true)
 			self.drawing.interfaceId = tfm.exec.addImage("185e3742fcc.png", ":20", 715, y+29, self.name, 0.1, 0.4, math.rad(90), 1.0, 0.5, 0.5, true)
 			
-			self.drawing.tipId = 1
-			ui.addTextArea(
-				39,
-				styles.drawuitip:format("draw_tip", Text:get("draw instruct ".. self.drawing.tipId, self.language, self.gender)),
-				self.name,
-				40, 370,
-				720, 50,
-				0x010101, 0x010101,
-				0.5, true
-			)
+			self.drawing.tipId = 0
+			ui.addTextArea(39, "", self.name, 40, 370, 720, 50, 0x010101, 0x010101, 0.5, true)
+			self:newDrawingTip()
 		end
 	else
 		ui.removeTextArea(40, self.name)
@@ -882,8 +881,6 @@ function Player:undoDrawingAction()
 		end
 	end
 	
-	--printt(drawing)
-	
 	self:setKeepDrawing(true)
 end
 
@@ -1069,7 +1066,7 @@ function Player:assertDrawing(han)
 					p_draw = l_draw[1]
 					
 					pdist = math.pythag(p_han.x, p_han.y, p_draw.x, p_draw.y)
-					if pdist > 40 then
+					if pdist > 50 then
 						return false
 					end
 					
@@ -1077,17 +1074,17 @@ function Player:assertDrawing(han)
 					p_draw = l_draw[#l_draw]
 					
 					pdist = math.pythag(p_han.x, p_han.y, p_draw.x, p_draw.y)
-					if pdist > 40 then
+					if pdist > 50 then
 						return false
 					end
 				end
 				pdist = math.udist(l_han.angle, l_draw.angle)
-				if pdist > (22.5 * #l_han) then
+				if pdist > (30 * #l_han) then
 					return false
 				end
 				
 				pdist = math.udist(l_han.large, l_draw.large)
-				if pdist > (40 * #l_han) then
+				if pdist > (50 * #l_han) then
 					return false
 				end
 			end
@@ -1142,6 +1139,13 @@ function Player:freeze(freeze)
 		tfm.exec.setPlayerGravityScale(self.name, 1.0, 0.0)
 		tfm.exec.freezePlayer(self.name, false, false)
 	end
+end
+
+function Player:newDrawingTip()
+	self.drawing.tipTimestamp = os.time() + 4000
+	self.drawing.tipId = self.drawing.tipId + 1
+	self.drawing.tipId = ((self.drawing.tipId-1)%5)+1
+	ui.updateTextArea(39, styles.drawuitip:format("draw_tip", Text:get("draw instruct ".. self.drawing.tipId, self.language, self.gender)), self.name)
 end
 
 function Player:initInventory()
@@ -1471,10 +1475,18 @@ function Player:pushItem(id, into)
 				if item.amount >= 1 then
 					item.amount = 0
 					item.sprite = nil
-					item.spriteId = tfm.exec.removeImage(item.spriteId, false)
+					if item.spriteId then
+						item.spriteId = tfm.exec.removeImage(item.spriteId, false)
+					end
 					
 					
 					self:insertItem(item.id, 1)
+					
+					
+					if id == #self.crafting and item.id == 8 then
+						system.giveAdventurePoint(self.name, "evt_hoppy_cny_lamps", "1")
+						system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
+					end
 					item.id = 0
 				end
 				
@@ -1484,7 +1496,9 @@ function Player:pushItem(id, into)
 						ax = self.crafting[i]
 						ax.amount = 0
 						ax.sprite = nil
-						ax.spriteId = tfm.exec.removeImage(ax.spriteId or -1, false)
+						if ax.spriteId then
+							ax.spriteId = tfm.exec.removeImage(ax.spriteId or -1, false)
+						end
 						ax.id = 0
 					end
 				else
@@ -1587,10 +1601,7 @@ function Player:insertItem(itemId, amount)
 			self:showInventoryItem(itemId, nil)
 		end
 		
-		if item.id == 8 then
-			system.giveAdventurePoint(self.name, "evt_hoppy_cny_lamps", "1")
-			system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
-		elseif item.id == 9 then
+		if item.id == 9 then
 			self:showLampInstallPlace(true)
 		end
 		
@@ -1696,6 +1707,8 @@ function Player:newDialog(dialogId, noDist)
 	if self.onDialog then
 		self:closeDialog()
 	end
+	
+	self:showInventory(false)
 	
 	local text, bunny
 	local hype = {
@@ -1862,7 +1875,9 @@ function Player:closeDialog()
 			ui.removeTextArea(Dialog.directAccess + i, self.name)
         end
 		tfm.exec.removeImage(Dialog.directAccess - 2000, true)
-		tfm.exec.removeImage(Dialog.bunnyId, true)
+		if Dialog.bunnyId then
+			tfm.exec.removeImage(Dialog.bunnyId, true)
+		end
 
 		self:onDialogClosed(Dialog.pInf)
     end

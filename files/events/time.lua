@@ -18,6 +18,12 @@ function eventLoop(elapsed, remaining)
 				if player.drawing.keep_drawing then
 					player:playSound("deadmaze/objectif.mp3", 100, nil, nil)
 				end
+				
+				if player.drawing.tipTimestamp then
+					if os.time() > player.drawing.tipTimestamp then
+						player:newDrawingTip()
+					end
+				end
 			end
 			
 			if player.ef then
