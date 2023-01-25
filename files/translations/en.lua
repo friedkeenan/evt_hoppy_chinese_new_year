@@ -8,30 +8,30 @@ Text["en"] = {
 		glue = "Glue",
 		paper = "Paper",
 		paint = "Paint",
-		paint_brush = "Paint Brush",
+		paint_brush = "Paintbrush",
 		lamp = "Lamp",
 		lamp_final = "Finished Lamp"
 	},
 	tips = {
 		materials = {
-			"Paper, ropes and wood can be found nearby trees.",
-			"Scissors and glue are located in the Village.",
-			"Paint cans are located near to water or lamps.",
-			"The Paint brush is sneaky. It could be anywhere. Hop over the map to find it!"
+			"Paper, rope and wood can be found in nearby trees.",
+			"Scissors and glue can be found in the village.",
+			"Paint cans can be found near water or lamps.",
+			"The paintbrush is sneaky. It could be anywhere. Hop around the map to find it!"
 		}
 	},
 	craft = {
-		instruct = "Click on Items to drag them between your Inventory and the Crafting Table",
+		instruct = "Click on items to drag them between your inventory and the crafting table",
 		lamp = "Craft Lamp"
 	},
-	install = "Hop over the Village and install the Lamp you just finished!",
+	install = "Hop around the village and install the lamp you just finished!",
 	draw = {
 		instruct = {
-			"Draw the Chinese word over the Lamp !",
-			"Click on the Screen to start drawing a line. For each point, click again!",
-			"You can finish a Line by pressing Space.",
+			"Draw the Chinese word over the lamp!",
+			"Click on the screen to start drawing a line. For each point, click again!",
+			"You can finish a line by pressing Space.",
 			"When your drawing is ready, you can click the 'Finish Drawing' button.",
-			"If you draw the word correctly, you will get a Lamp ready to install on the Village!"
+			"If you draw the word correctly, you will get a lamp ready to install on the village!"
 		},
 		lamp = "Draw on Lamp",
 		finish = "Finish Drawing",
@@ -41,15 +41,15 @@ Text["en"] = {
 	},
 	truffle = {
 		welcome = {
-			"Hello!! Welcome to the Chinese New Year's Festival! I need your help to adorn the Village properly for the Festival!",
-			"We need to make a bunch of Lamps! Hop around all over the Village to find the materials we need!",
+			"Hello!! Welcome to the Chinese New Year's Festival! I need your help to adorn the village properly for the festival!",
+			"We need to make a bunch of lamps! Hop around and explore the village to find the materials we need!",
 		},
-		thanks = {"Thank you very much! I couldn't have done this without you! You can enjoy the Festival :D"}
+		thanks = {"Thank you very much! I couldn't have done this without you! Enjoy the festival :D"}
 	},
 	han = {
 		[1] = {
 			name = "Rabbit",
-			desc = {"This is the Year of the Rabbit, my year! I am super excited about this!"}
+			desc = {"This is the Year of the Rabbit- my year! I am super excited about this!"}
 		},
 		[2] = {
 			name = "Chinese Zodiac",
@@ -61,11 +61,11 @@ Text["en"] = {
 		},
 		[4] = {
 			name = "Fireworks",
-			desc = {"When fireworks go BOOM, there are beautiful lights in the sky in all kinds of different shapes!"}
+			desc = {"When fireworks go BOOM, they make beautiful lights in the sky in all kinds of different shapes!"}
 		},
 		[5] = {
 			name = "Tang Suit",
-			desc = {"Tang Suit brings good fortune and best wishes! It represent happiness and logevity!"}
+			desc = {"Tang Suit brings good fortune and best wishes! It represent happiness and longevity!"}
 		},
 		[6] = {
 			name = "Lion Dance",
@@ -85,7 +85,7 @@ Text["en"] = {
 		},
 		[10] = {
 			name = "Couplet",
-			desc = {"Couplet is two complementary poetic lines adhering to certain rules. It is often written on red paper or carved on wooden uprights for appreciation!"}
+			desc = {"A Couplet is two complementary poetic lines adhering to certain rules. It is often written on red paper or carved on wooden uprights for appreciation!"}
 		},
 		[11] = {
 			name = "Blessing",
@@ -101,7 +101,7 @@ Text["en"] = {
 		},
 		[14] = {
 			name = "Ingots",
-			desc = {"Ingots are materials casted into a shape to facilitate transportation and processing. They make metal easy to transport, store and measure!"}
+			desc = {"Ingots are materials cast into a shape to facilitate transportation and processing. They make metal easy to transport, store and measure!"}
 		},
 		[15] = {
 			name = "Pay a New Year Call",
@@ -112,8 +112,8 @@ Text["en"] = {
 			desc = {"Lunar New Year's Eve is the most important evening of the year!!! People are excited when it comes around!"}
 		},
 		[17] = {
-			name = "Ancestor Workship",
-			desc = {"Ancestor Workship is the act of celebrating those who are no longer with us. Many people build shrines in their homes to honour those who have passed, and even bring gifts to these altars!"}
+			name = "Ancestor Worship",
+			desc = {"Ancestor Worship is the act of celebrating those who are no longer with us. Many people build shrines in their homes to honour those who have passed, and even bring gifts to these altars!"}
 		},
 		[18] = {
 			name = "Paper Cut",
@@ -129,7 +129,7 @@ Text["en"] = {
 		},
 		[21] = {
 			name = "Dragon",
-			desc = {"Dragons are so cool! They have been in every fairy tail that you can imagine! Unfortunately, most of the time they play the bad guy, but they are really good, I promise!"}
+			desc = {"Dragons are so cool! They have been in every fairytale that you can imagine! Unfortunately, most of the time they play the bad guy, but they are really good, I promise!"}
 		},
 		[22] = {
 			name = "Lantern Festival",
@@ -137,7 +137,7 @@ Text["en"] = {
 		},
 		[23] = {
 			name = "Season",
-			desc = {"Seasons can be hot, can be cold, can be pleasant and bring out your allergies! They change so often that sometimes they forget what are they supossed to be at their time!"}
+			desc = {"Seasons can be hot, they can be cold, they can be pleasant, and they can bring out your allergies! They change so often that sometimes they forget what are they supossed to be at their time!"}
 		},
 		[24] = {
 			name = "Festival",
@@ -145,6 +145,3 @@ Text["en"] = {
 		},
 	}
 }
-
-Text["int"] = Text["en"]
-Text["xx"] = Text["en"]
