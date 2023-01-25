@@ -16,7 +16,7 @@ do
 		end
 		
 		for i = #aux, 1, -1 do
-			str[#str + 1] = aux[i]
+			this[#this + 1] = aux[i]
 		end
 		
 		return concat(this, " ")

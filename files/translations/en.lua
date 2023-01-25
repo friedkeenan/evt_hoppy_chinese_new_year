@@ -15,15 +15,14 @@ Text["en"] = {
 	tips = {
 		materials = {
 			"Paper, ropes and wood can be found nearby trees.",
-			"Scissors and glue are usually found on the Village.",
-			"Paint can usually be found near to water or lamps.",
+			"Scissors and glue are located in the Village.",
+			"Paint cans are located near to water or lamps.",
 			"The Paint brush is sneaky. It could be anywhere. Hop over the map to find it!"
 		}
 	},
 	craft = {
 		instruct = "Click on Items to drag them between your Inventory and the Crafting Table",
 		lamp = "Craft Lamp"
-		
 	},
 	install = "Hop over the Village and install the Lamp you just finished!",
 	draw = {

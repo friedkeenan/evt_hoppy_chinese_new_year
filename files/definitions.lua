@@ -1,14 +1,15 @@
 styles = {}
 
-styles.regular = "<font face='Century Schoolbook,Baskerville,Baskerville Old Face,Hoefler Text,Garamond,Times New Roman,serif'>%s</font>"
+styles.regular = "<font face='Century Schoolbook,Baskerville,Baskerville Old Face,Hoefler Text,Garamond,Times New Roman,serif'>%s"
 styles.chat = "<font color='#FE5148'>%s</font>"
+styles.chat2 = "<CEP>%s</CEP>"
 styles.invq = styles.regular:format("<D>%s</D>")
 styles.invqd = styles.regular:format("<font color='#3F0000'><b>%s</b></font>")
 styles.ititle = styles.invq:format("<font size='28'><p align='center'>%s</p></font>")
 styles.drawui = styles.invq:format("<font size='14.5'><p align='center'><a href='event:%s'>%s</a></p></font>")
 styles.drawuitip = styles.drawui:format("%s", "<D>%s</D>")
 styles.ilist = styles.regular:format("<font color='#FFFFFF' size='20'><b>%s</b></font>")
-styles.dialogue = styles.regular:format("<font color='#3F0000' size='15'><b>%s</b></font>")
+styles.dialogue = styles.regular:format("<font color='#3F0000' size='15'><b>%s")--</b></font>
 
 enum.items = {
 	[1] = {

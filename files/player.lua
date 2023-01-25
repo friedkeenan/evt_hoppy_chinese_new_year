@@ -10,7 +10,7 @@ function Player:new(playerName)
 		
 		progress = {},
 		
-		language = info.language,
+		language = tfm.get.room.community,
 		gender = info.gender,
 		
 		isFacingRight = true,
@@ -101,12 +101,9 @@ function Player:init(rawdata, reset)
 		
 		self.progress.hans = self.progress.hans or 0
 		self.progress.inst = self.progress.inst or 0
-		self.progress.finished = self:getData("finished") or false
+		self.progress.finished = self.progress.finished or false
+		self.progress.started = self.progress.started or false
 	end
-	
-	--if self:getData("finished") then
-	--	self:resetDefaultData()
-	--end
 	
 	self:initInventory()
 	
@@ -119,13 +116,24 @@ function Player:init(rawdata, reset)
 		lookAtPlayer = true,
 		interactive = true
 	}, self.name)
-	self:placeMainNpc("entrance")
 
 	self:setLampsDisplay(true)
 	
-	if not self:getData("finished") then
+	if self:getData("finished") then
+		for i=1, 72 do
+			system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
+		end
+		
+		self:placeMainNpc("toptree")
+	else
 		self:setMapItems(true)
 		self:showLampInstallPlace(true)
+		
+		if self:getData("started") then
+			self:placeMainNpc("village")
+		else
+			self:placeMainNpc("entrance")
+		end
 	end
 	
 	self:playBackgroundMusic(true)
@@ -468,8 +476,8 @@ function Player:placeMainNpc(where)
 	local x, y, facingRight
 	local sx
 	if where == "village" then
-		x = 1170
-		y = 645
+		x = 1150
+		y = 388
 		facingRight = false
 	elseif where == "entrance" or not where then
 		where = "entrance"
@@ -497,7 +505,7 @@ function Player:placeMainNpc(where)
 	end
 	Npc.imageId = tfm.exec.addImage(Npc.sprite, "_250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
 	ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, Npc.x-(43*-sx), Npc.y-36, 90, 0, 0x0, 0x0, 1.0, false)
-	ui.addTextArea(900, "<font color='#FFFFFF'><p align='center'>Truffle</p></font>", self.name, Npc.x-(45*-sx), Npc.y-38, 90, 0, 0x0, 0x0, 1.0, false)
+	ui.addTextArea(900, "<font color='#F7E5BA'><p align='center'>Truffle</p></font>", self.name, Npc.x-(45*-sx), Npc.y-38, 90, 0, 0x0, 0x0, 1.0, false)
 end
 
 function Player:talkToNpc(x, y)
@@ -602,7 +610,7 @@ function Player:showLampInterface(show)
 				62,
 				styles.ititle:format(Text:get("draw lamp", self.language)),
 				self.name,
-				400, 60,
+				410, 60,
 				330, 0,
 				0x0, 0x0,
 				1.0, true
@@ -732,15 +740,17 @@ function Player:setKeepDrawing(set)
 		
 		if self.drawing.consecutive_points > 0 then
 			local point = self.drawing.points[#self.drawing.points]
-			self.drawing.keepDrawingId = tfm.exec.addImage(
-				"185cd3b62c5.png", "!100",
-				point.x, point.y,
-				self.name,
-				1.0, 1.0,
-				0, 0.25,
-				0.5, 0.5,
-				true
-			)
+			if point then
+				self.drawing.keepDrawingId = tfm.exec.addImage(
+					"185cd3b62c5.png", "!100",
+					point.x, point.y,
+					self.name,
+					1.0, 1.0,
+					0, 0.25,
+					0.5, 0.5,
+					true
+				)
+			end
 		end
 	else
 		if self.drawing.consecutive_points >= 2 then
@@ -804,31 +814,33 @@ function Player:registerPoint(x, y)
 		
 		local point = drawing.points[index]
 		
-		point.i1 = tfm.exec.addImage(
-			"185e1bf0bb4.png", "!2000", 
-			point.x, point.y,
-			self.name,
-			0.25, 0.25,
-			0, 1.0,
-			0.5, 0.5,
-			false
-		)
-	
-		if drawing.consecutive_points >= 2 then
-			local previous = drawing.points[index - 1]
-			
-			local sx = math.pythag(point.x, point.y, previous.x, previous.y) / 40
-			local an = math.atan2(previous.y - point.y, previous.x - point.x)
-			
-			point.i2 = tfm.exec.addImage(
-				"185e1bebf8a.png", "!4000",
+		if point then
+			point.i1 = tfm.exec.addImage(
+				"185e1bf0bb4.png", "!2000", 
 				point.x, point.y,
 				self.name,
-				sx, 0.25,
-				an, 1.0,
-				0.0, 0.5,
+				0.25, 0.25,
+				0, 1.0,
+				0.5, 0.5,
 				false
 			)
+		
+			if drawing.consecutive_points >= 2 then
+				local previous = drawing.points[index - 1]
+				
+				local sx = math.pythag(point.x, point.y, previous.x, previous.y) / 40
+				local an = math.atan2(previous.y - point.y, previous.x - point.x)
+				
+				point.i2 = tfm.exec.addImage(
+					"185e1bebf8a.png", "!4000",
+					point.x, point.y,
+					self.name,
+					sx, 0.25,
+					an, 1.0,
+					0.0, 0.5,
+					false
+				)
+			end
 		end
 	else
 		self:finishLine()
@@ -940,8 +952,10 @@ function Player:finishLine()
 		local point
 		for i = start, #drawing.points do
 			point = drawing.points[i]
-			point.lineId = #drawing.lines + 1
-			line[#line + 1] = table.unreference(point)
+			if point then
+				point.lineId = #drawing.lines + 1
+				line[#line + 1] = table.unreference(point)
+			end
 		end
 		
 		local angle = 0
@@ -1612,6 +1626,7 @@ function Player:insertItem(itemId, amount)
 		end
 		
 		if item.id == 9 then
+			tfm.exec.chatMessage(styles.chat2:format(Text:get("install", self.language, self.gender)), self.name)
 			self:showLampInstallPlace(true)
 		end
 		
@@ -1802,9 +1817,6 @@ function Player:setDialogDisplay(instruction)
 			Dialog.pointer = Dialog.pointer + 1
 			if Dialog.pointer <= #Text then
 				Dialog.currentText = Text[Dialog.pointer] or "..."
-				if (self.language == "ar") or (self.language == "he") then
-					Dialog.currentText = reverseWords(Dialog.currentText, true)
-				end
 				Dialog.displayText = "..."
 				Dialog.lenght = Dialog.currentText:len()
 				Dialog.cursor = 1
@@ -1898,6 +1910,9 @@ end
 function Player:onDialogClosed(pid)
 	if self.Npc.place == "entrance" then
 		self:placeMainNpc("village")
+		if self:getData("started") == false then
+			self:setData("started", true, true)
+		end
 	end
 end
 
