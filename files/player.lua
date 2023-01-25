@@ -533,8 +533,6 @@ function Player:showLampInterface(show)
 	if show and not (self.drawing.active or self.crafting.active) then
 		self.interface = {{items={}}, {items={}}}
 		self.interface.mainId = tfm.exec.addImage("185e3742fcc.png", ":50", 400, 210, self.name, 0.95, 0.95, 0, 1.0, 0.5, 0.5, true)
-		
-		local r = self:fetchRecipes(true, true)
 		-- +- 170
 		local rr
 		do -- 1
@@ -543,7 +541,7 @@ function Player:showLampInterface(show)
 				265, 225,
 				self.name,
 				2.25, 2.25,
-				0, r[1].available and 1.0 or 0.4,
+				0, 1.0,
 				0.5, 0.5,
 				true
 			)
@@ -578,7 +576,7 @@ function Player:showLampInterface(show)
 					1.0, true
 				)
 			end
-			if r[1].available then
+			do
 				ui.addClickable(121, 60, 55, 310, 310, self.name, "craft_a_lamp", true)
 			end
 		end
@@ -589,7 +587,7 @@ function Player:showLampInterface(show)
 				630, 225,
 				self.name,
 				2.25, 2.25,
-				0, r[2].available and 1.0 or 0.4,
+				0, 1.0,
 				0.5, 0.5,
 				true
 			)
@@ -623,7 +621,7 @@ function Player:showLampInterface(show)
 					1.0, true
 				)
 			end
-			if r[2].available then
+			do
 				ui.addClickable(122, 422, 55, 310, 310, self.name, "craft_a_lamp_draw", true)
 			end
 		end
@@ -879,7 +877,6 @@ function Player:undoDrawingAction()
 						self:removePoint(-1)
 					end
 				end
-				
 				self:previewLineToDraw()
 			end
 		end

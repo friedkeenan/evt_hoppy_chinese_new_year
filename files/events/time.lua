@@ -70,8 +70,9 @@ function eventLoop(elapsed, remaining)
 		else
 			if not noTimeLeft then
 				for playerName, player in next, playerList do
-					tfm.exec.freezePlayer(playerName, true, true)
 					player:closeCrafting()
+					player:closeDrawing()
+					tfm.exec.freezePlayer(playerName, true, true)
 				end
 			end
 			
@@ -82,7 +83,7 @@ function eventLoop(elapsed, remaining)
 			end
 		end
 	else
-		if not debugMode then
+		if debugMode then
 			if noTimeLeft then
 				for playerName, player in next, playerList do
 					tfm.exec.freezePlayer(playerName, false, false)
