@@ -661,12 +661,22 @@ function Player:showDrawingInterface(show)
 			self.drawing.interfaceId = tfm.exec.addImage("185e3742fcc.png", ":20", 715, y+29, self.name, 0.1, 0.4, math.rad(90), 1.0, 0.5, 0.5, true)
 			
 			self.drawing.tipId = 0
-			ui.addTextArea(39, "", self.name, 40, 370, 720, 50, 0x010101, 0x010101, 0.5, true)
+			ui.addTextArea(39, "", self.name, 40, 375, 720, 50, 0x010101, 0x010101, 0.5, true)
+			local t = styles.drawuitip:format("haninfo " .. self.drawing.hanId, "%s")
+			local hanchar = enum.han[self.drawing.hanId].name
+			if self.language == "cn" then
+				t = t:format(hanchar)
+			else
+				local f = ("han %d name"):format(self.drawing.hanId)
+				t = t:format(("%s - %s"):format(hanchar, Text:get(f, self.language, self.gender)))
+			end
+			ui.addTextArea(38, t, self.name, 200, 22, 400, 0, 0x010101, 0x010101, 0.5, true)
 			self:newDrawingTip()
 		end
 	else
 		ui.removeTextArea(40, self.name)
 		ui.removeTextArea(39, self.name)
+		ui.removeTextArea(38, self.name)
 		if self.drawing.interfaceId then
 			self.drawing.interfaceId = tfm.exec.removeImage(self.drawing.interfaceId, true)
 		end
