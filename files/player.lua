@@ -36,6 +36,7 @@ function Player:new(playerName)
 			consecutive_previous = 0,
 			keep_drawing = false
 		},
+		mapItems = {},
 		crafting = {
 			active = false
 		},
@@ -119,11 +120,8 @@ function Player:init(rawdata, reset)
 
 	self:setLampsDisplay(true)
 	
-	if self:getData("finished") then
-		for i=1, 72 do
-			system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
-		end
-		
+	
+	if self:getData("finished") then		
 		self:placeMainNpc("toptree")
 	else
 		self:setMapItems(true)
@@ -134,6 +132,9 @@ function Player:init(rawdata, reset)
 		else
 			self:placeMainNpc("entrance")
 		end
+		
+		self:psst(true, "psst")
+		self:truffleExclamation(true)
 	end
 	
 	self:playBackgroundMusic(true)
@@ -337,6 +338,19 @@ function Player:collectMapItem(itemId)
 		self:setHoldingItem(true)
 		
 		mi.active = false
+		
+		local pending = false
+		for i=1, 7 do
+			if self.mapItems[i] and self.mapItems[i].active then
+				pending = true
+				break
+			end
+		end
+		
+		if not pending then
+			self:psst(true, "retreat")
+			self:truffleExclamation(true)
+		end
 	end
 end
 
@@ -487,7 +501,7 @@ function Player:placeMainNpc(where)
 	elseif where == "toptree" then
 		x = 146
 		y = 314
-		facingRight = true
+		facingRight = false
 	end
 	
 	sx = facingRight and 1.0 or -1.0
@@ -515,8 +529,10 @@ function Player:talkToNpc(x, y)
 			if not self.interface then
 				self:showLampInterface(true)
 			end
+			self:truffleExclamation(false)
 		elseif Npc.place == "entrance" then
 			self:newDialog("welcome", false)
+			self:truffleExclamation(false)
 		elseif Npc.place == "toptree" then
 			self:newDialog("thanks", false)
 		end
@@ -524,6 +540,7 @@ function Player:talkToNpc(x, y)
 end
 
 function Player:showLampInterface(show)
+	self:psst(false)
 	if self.interface then
 		
 		if self.interface.mainId then
@@ -544,7 +561,7 @@ function Player:showLampInterface(show)
 		self.interface = nil
 	end
 	
-	if show and not (self.drawing.active or self.crafting.active) then
+	if show and not (self.drawing.active or self.crafting.active or self:getData("finished")) then
 		self.interface = {{items={}}, {items={}}}
 		self.interface.mainId = tfm.exec.addImage("185e3742fcc.png", ":50", 400, 210, self.name, 0.95, 0.95, 0, 1.0, 0.5, 0.5, true)
 		-- +- 170
@@ -644,7 +661,8 @@ function Player:showLampInterface(show)
 end
 
 function Player:showDrawingInterface(show)
-	if show then
+	self:psst(false)
+	if show and not self:getData("finished") and (self:getData("hans") < 24) then
 		self:showInventory(false)
 		self:placeMainNpc("toptree")
 		self:showLampInterface(false)
@@ -671,7 +689,8 @@ function Player:showDrawingInterface(show)
 			self.drawing.tipId = 0
 			ui.addTextArea(39, "", self.name, 40, 375, 720, 50, 0x010101, 0x010101, 0.5, true)
 			local t = styles.drawuitip:format("haninfo " .. self.drawing.hanId, "%s")
-			local hanchar = enum.han[self.drawing.hanId].name
+			local han =  enum.han[self.drawing.hanId]
+			local hanchar = han and han.name or "?"
 			if self.language == "cn" then
 				t = t:format(hanchar)
 			else
@@ -827,19 +846,20 @@ function Player:registerPoint(x, y)
 		
 			if drawing.consecutive_points >= 2 then
 				local previous = drawing.points[index - 1]
-				
-				local sx = math.pythag(point.x, point.y, previous.x, previous.y) / 40
-				local an = math.atan2(previous.y - point.y, previous.x - point.x)
-				
-				point.i2 = tfm.exec.addImage(
-					"185e1bebf8a.png", "!4000",
-					point.x, point.y,
-					self.name,
-					sx, 0.25,
-					an, 1.0,
-					0.0, 0.5,
-					false
-				)
+				if previous then
+					local sx = math.pythag(point.x, point.y, previous.x, previous.y) / 40
+					local an = math.atan2(previous.y - point.y, previous.x - point.x)
+					
+					point.i2 = tfm.exec.addImage(
+						"185e1bebf8a.png", "!4000",
+						point.x, point.y,
+						self.name,
+						sx, 0.25,
+						an, 1.0,
+						0.0, 0.5,
+						false
+					)
+				end
 			end
 		end
 	else
@@ -1103,12 +1123,12 @@ function Player:assertDrawing(han)
 					end
 				end
 				pdist = math.udist(l_han.angle, l_draw.angle)
-				if pdist > (30 * #l_han) then
+				if pdist > (45 * #l_han) then
 					return false
 				end
 				
 				pdist = math.udist(l_han.large, l_draw.large)
-				if pdist > (50 * #l_han) then
+				if pdist > (65 * #l_han) then
 					return false
 				end
 			end
@@ -1147,10 +1167,13 @@ function Player:closeDrawing(success)
 	
 	self:hideOffscreen(false)
 	
+	self:closeCrafting()
 	if success then
-		self:newDialog(self.drawing.hanId)--self:showLampInterface(true)
+		self:newDialog(self.drawing.hanId)
+		--self:showLampInterface(true)
 	else
-		self:showCrafting(true)
+		self:newDialog("careful_drawing")
+		--self:showCrafting(true)
 	end
 end
 
@@ -1162,6 +1185,42 @@ function Player:freeze(freeze)
 	else
 		tfm.exec.setPlayerGravityScale(self.name, 1.0, 0.0)
 		tfm.exec.freezePlayer(self.name, false, false)
+	end
+end
+
+function Player:psst(show, textName)
+	if self.psstId1 then
+		self.psstId1 = tfm.exec.removeImage(self.psstId1, true)
+	end
+	if self.psstId2 then
+		self.psstId2 = tfm.exec.removeImage(self.psstId2, true)
+	end
+	
+	ui.removeTextArea(10000, self.name)
+	
+	if show then
+		self.psstId1 = tfm.exec.addImage("185d44bafbb.png", ":100", 785, 385, self.name, 0.5, 0.5, 0, 1.0, 1.0, 1.0, true) -- Dialogue Box
+		self.psstId2 = tfm.exec.addImage("185d44a7bb2.png", "&100", 775, 382, self.name, 0.75, 0.75, 0, 1.0, 1.0, 1.0, true) -- Lil Truffle
+		
+		local psst_hi = styles.dialogue:format(Text:get("truffle " .. textName, self.language, self.gender))
+		if textName == "retreat" then
+			psst_hi = psst_hi:gsub("size='%d+'", "size='12'")
+		end
+		ui.addTextArea(10000, psst_hi, self.name, 545, 325, 150, 45, 0x0, 0x0, 1.0, true)
+		
+		Timer.new(7500, false, function()
+			self:psst(false)
+		end)
+	end
+end
+
+function Player:truffleExclamation(show)
+	ui.removeTextArea(6969, self.name)
+	ui.removeTextArea(6970, self.name)
+	
+	if show then
+		ui.addTextArea(6969, styles.BANG:format(0x000000), self.name, 3 + self.Npc.x - 50, 3 + self.Npc.y - 80, 100, 0, 0x0, 0x0, 1.0, false)
+		ui.addTextArea(6970, styles.BANG:format(0xF7E5BA), self.name, self.Npc.x - 50, self.Npc.y - 80, 100, 0, 0x0, 0x0, 1.0, false)
 	end
 end
 
@@ -1206,7 +1265,7 @@ end
 
 function Player:showCrafting(show)
 	if not self.crafting.active then return end
-	
+	self:psst(false)
 	if show then
 		self:showLampInterface(false)
 		self:showCrafting(false)
@@ -1250,6 +1309,11 @@ function Player:showCrafting(show)
 		end
 		
 		self:showInventory(true)
+		
+		if not self.craftingTipShown then
+			tfm.exec.chatMessage(styles.chat2:format(Text:get("craft instruct", self.language, self.gender)), self.name)
+			self.craftingTipShown = true
+		end
 	else
 		if self.crafting.imageId then
 			self.crafting.imageId = tfm.exec.removeImage(self.crafting.imageId, true)
@@ -1268,6 +1332,10 @@ function Player:showCrafting(show)
 end
 
 function Player:setCrafting(size)
+	if self:getData("finished") then
+		self:closeCrafting()
+		return
+	end
 	local ms
 	local slots = {}
 	local xc, yc
@@ -1336,6 +1404,7 @@ function Player:closeCrafting()
 	self.crafting = {}
 	
 	self.crafting.active = false
+	self.crafting.size = 0
 end
 
 function Player:showInventoryItem(id, show)
@@ -1356,7 +1425,7 @@ function Player:showInventoryItem(id, show)
 			if item.amount > 1 then
 				ui.addTextArea(
 					5010 + id,
-					("<p align='right'><font size='18'>%s</font></p>"):format(styles.invqd:format(item.amount)),
+					("<p align='right'><font size='18'><b>%s</b></font></p>"):format(styles.invqd:format(item.amount)),
 					self.name,
 					item.dx+2, item.dy + 22,
 					35, 0,
@@ -1397,11 +1466,13 @@ end
 
 function Player:showInventory(show)
 	if show and not self.drawing.active then
+		self:psst(false)
 		self.items.displaying = true
 		
 		if self.items.coverId then
 			tfm.exec.removeImage(self.items.coverId)
 		end
+		
 		self.items.coverId = tfm.exec.addImage(
 			"185e53cdfa2.png", ":1",
 			400, 320, -- X, Y
@@ -1424,12 +1495,14 @@ function Player:showInventory(show)
 		
 		if self.items.coverId then
 			self.items.coverId = tfm.exec.removeImage(self.items.coverId, true)
-			--self.items.coverId = tfm.exec.removeImage(self.items.coverId, true)
 		end
 		
 		if show == nil then
 			self:showInventory(true)
 		end
+		
+		ui.removeTextArea(369, self.name)
+		ui.removeTextArea(370, self.name)
 	end
 	
 	self:setSelectedSlot(nil)
@@ -1437,7 +1510,7 @@ end
 
 function Player:pushItem(id, into)
 	id = id or self.items.selected
-	if into then
+	if into and self.crafting.active then
 		local item = self.items[id]
 		if self.crafting.size == 3 and id < 6 or id == 9 then
 			return false
@@ -1491,7 +1564,7 @@ function Player:pushItem(id, into)
 				end
 			end
 		end
-	else -- out of
+	elseif (not into) and self.crafting.active then -- out of
 		local item = self.crafting[id]
 		
 		if item then
@@ -1542,16 +1615,37 @@ function Player:pushItem(id, into)
 end
 
 function Player:setSelectedSlot(id, push)
+	local old = self.items.selected
 	self.items.selected = (id or self.items.selected)
 	
 	if self.items.selected > 0 then
+		local item = self.items[self.items.selected]
 		if push then
 			if self.crafting.active then
 				self:pushItem(id, true)
 			end
 		end
 		
-		local item = self.items[self.items.selected]
+		do
+			if old ~= self.items.selected and self.items.displaying then
+				if self.items.textDescTimer then
+					Timer.remove(self.items.textDescTimer)
+					self.items.textDescTimer = nil
+				end
+				
+				local itemName = Text:get("items " .. enum.items[self.items.selected].name, self.language, self.gender)
+				local x, y = 300, 305
+				ui.addTextArea(369, styles.invshow:format(0x010101, itemName), self.name, x + 1, y + 1, 200, 0, 0x0, 0x0, 1.0, true)
+				ui.addTextArea(370, styles.invshow:format(0xF2C868, itemName), self.name, x, y, 200, 0, 0x0, 0x0, 1.0, true)
+				
+				self.items.textDescTimer = Timer.new(2000, false, function()
+					ui.removeTextArea(369, self.name)
+					ui.removeTextArea(370, self.name)
+				end)
+			end
+		end
+		
+		
 		if self.items.selectedImgId then
 			self.items.selectedImgId = tfm.exec.removeImage(self.items.selectedImgId, false)
 		end
@@ -1733,6 +1827,7 @@ function Player:newDialog(dialogId, noDist)
 		self:closeDialog()
 	end
 	
+	self:psst(false)
 	self:showInventory(false)
 	
 	local text, bunny
@@ -2089,8 +2184,6 @@ function Player:isPlayingSound(soundName)
     end
     return false
 end
-
-
 
 --[[
 function soundLoop()

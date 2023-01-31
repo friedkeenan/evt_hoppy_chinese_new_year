@@ -42,6 +42,7 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 				else
 					if key == 32 then
 						player:placeLamp(x, y)
+						player:psst(false)
 					end
 				end
 				if key > 48 and key <= 57 then
@@ -86,43 +87,45 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 	end
 	
 	local eventCommand = table.remove(args, 1)
-	
-	if eventName == "craftable" then
-		tfm.exec.chatMessage("craft-table", playerName)
-	elseif eventName == "items" then
-		tfm.exec.chatMessage("itens", playerName)
-	elseif eventName == "inv" then
+
+	if eventName == "inv" then
 		local id = textAreaId % 10
 		player:setSelectedSlot(id, player.crafting.active)
-	elseif eventName == "craft_action" then
-		local id = textAreaId % 10
-		if player.crafting.active then
-			local re = false
-			if player.crafting.size == 3 then
-				if player.crafting[4].id == 9 then
-					re = true
-					player:initDrawing()
+	elseif not player:getData("finished") then
+		if eventName == "craft_action" then
+			local id = textAreaId % 10
+			if player.crafting.active then
+				local re = false
+				if player.crafting.size == 3 then
+					if player.crafting[4].id == 9 then
+						re = true
+						player:initDrawing()
+					end
+				end
+			
+				if not re then
+					player:pushItem(id, false)
+					if id == player.crafting.size + 1 and player.crafting.size == 5 then
+						player:closeCrafting()
+						player:showLampInterface(true)
+					end
 				end
 			end
-		
-			if not re then
-				player:pushItem(id, false)
-				if id == player.crafting.size + 1 and player.crafting.size == 5 then
-					player:closeCrafting()
-					player:showLampInterface(true)
-				end
-			end
+		elseif eventName == "craft_a_lamp" then
+			player:setCrafting(5)
+		elseif eventName == "craft_a_lamp_draw" then
+			player:setCrafting(3)
+		elseif eventName == "draw_send" then
+			player:finishDrawing()
+		elseif eventName == "draw_undo" then
+			player:undoDrawingAction()
+		elseif eventName == "draw_tip" then
+			player:newDrawingTip()
 		end
-	elseif eventName == "craft_a_lamp" then
-		player:setCrafting(5)
-	elseif eventName == "craft_a_lamp_draw" then
-		player:setCrafting(3)
-	elseif eventName == "draw_send" then
-		player:finishDrawing()
-	elseif eventName == "draw_undo" then
-		player:undoDrawingAction()
-	elseif eventName == "draw_tip" then
-		player:newDrawingTip()
+	end
+	
+	if eventName == "close" then
+		ui.removeTextArea(textAreaId, playerName)
 	end
 end
  

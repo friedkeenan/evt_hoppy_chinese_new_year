@@ -21,7 +21,7 @@ Text["en"] = {
 		}
 	},
 	craft = {
-		instruct = "Click on items to drag them between your inventory and the crafting table",
+		instruct = "Click on items to drag them between your inventory and the crafting table.",
 		lamp = "Craft Lamp"
 	},
 	install = "Hop around the village and install the lamp you just finished!",
@@ -44,7 +44,10 @@ Text["en"] = {
 			"Hello!! Welcome to the Chinese New Year's Festival! I need your help to adorn the village properly for the festival!",
 			"We need to make a bunch of lamps! Hop around and explore the village to find the materials we need!",
 		},
-		thanks = {"Thank you very much! I couldn't have done this without you! Enjoy the festival :D"}
+		thanks = {"Thank you very much! I couldn't have done this without you! Enjoy the festival :D"},
+		careful_drawing = {"Be careful when writting Chinese characters! Even the slightest difference can spell a completely different word!"},
+		psst = "Psst, hi!",
+		retreat = "Come back to see me to craft a lamp!"
 	},
 	han = {
 		[1] = {
@@ -100,8 +103,8 @@ Text["en"] = {
 			desc = {"Jiaozi is made of dough. It can be filled with all kinds of different yummy foods!"}
 		},
 		[14] = {
-			name = "Ingots",
-			desc = {"Ingots are materials cast into a shape to facilitate transportation and processing. They make metal easy to transport, store and measure!"}
+			name = "Yuanbao",
+			desc = {"Yuanbao is an ancient currency, an ingot made of gold or silver and symbolises wealth! "}
 		},
 		[15] = {
 			name = "Pay a New Year Call",
@@ -145,3 +148,6 @@ Text["en"] = {
 		},
 	}
 }
+
+Text["int"] = Text["en"]
+Text["xx"] = Text["en"]

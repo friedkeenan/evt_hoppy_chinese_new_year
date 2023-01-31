@@ -17,7 +17,7 @@ Text["tr"] = {
 			"Kağıt, ip ve odun ağaçların yakınlarında bulunabilir.",
 			"Makas ve yapıştırıcı Köy'de bulunuyor.",
 			"Boya tenekeleri su kenarlarında ya da fenerlerin yanlarında bulunuyor.",
-			"Boya fırçası iseçok sinsi. Her yerde olabilir. Bulmak için haritanın bir ucundan diğer ucuna hoplayıp durun!"
+			"Boya fırçası ise çok sinsi. Her yerde olabilir. Bulmak için haritanın bir ucundan diğer ucuna hoplayıp durun!"
 		}
 	},
 	craft = {
@@ -44,7 +44,10 @@ Text["tr"] = {
 			"Merhaba!! Çin Yeni Yılı Festivali'ne hoş geldin! Köy'ü Festival'e uygun şekilde süslemek için yardımına ihtiyacım var!",
 			"Biir sürü lamba hazırlamamız gerekiyor! İhtiyacımız olan tüm malzemeleri bulmak için tüm Köy'ü hoplayıp durun!",
 		},
-		thanks = {"Çok teşekkür ederim! Senin yardımın olmadan bunu başaramazdım! Festivalin tadını çıkar :D"}
+		thanks = {"Çok teşekkür ederim! Senin yardımın olmadan bunu başaramazdım! Festivalin tadını çıkar :D"},
+		careful_drawing = {"Çince karakterleri çizerken dikkatli olun! Ufak farklar bile kelimenin farklı telaffuz edilmesine yol açabilir!"},
+		psst = "Pşşt, selam!",
+		retreat = "Bir fener yapacağınız zaman beni görmek için geri gel!"
 	},
 	han = {
 		[1] = {
@@ -97,11 +100,11 @@ Text["tr"] = {
 		},
 		[13] = {
 			name = "Jiaozi",
-			desc = {"Jiaozi hamurdan yapılır. Bir sürü çeşitte leiz yemekle doldurulabilirler!"}
+			desc = {"Jiaozi hamurdan yapılır. Bir sürü çeşitte leziz yemekle doldurulabilirler!"}
 		},
 		[14] = {
-			name = "Külçe",
-			desc = {"Külçeler, nakliye ve işlemeyi kolaylaştırmak için bir şekle dökülmüş malzemelerdir. Metalin taşınmasını, saklanmasını ve ölçülmesini kolaylaştırırlar!"}
+			name = "Yunbao",
+			desc = {"Yuanbao antik bir para birimidir, altın veya gümüşten yapılan bir külçedir ve bereketi simgeler!"}
 		},
 		[15] = {
 			name = "Yeni Yıl Dileğinde Bulunmak",

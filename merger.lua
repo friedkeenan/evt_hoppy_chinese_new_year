@@ -13,7 +13,7 @@ local fileList = {
             "en", "es", "br", "fr", "pl",
             "he", "it", "ro", "ru", "ar",
             "cn", "nl", "tr", "lt", "hu",
-            "tl"
+            "tl", "fi"
         }
     },
     [7] = "player",

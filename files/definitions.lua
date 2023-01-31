@@ -10,6 +10,8 @@ styles.drawui = styles.invq:format("<font size='14.5'><p align='center'><a href=
 styles.drawuitip = styles.drawui:format("%s", "<D>%s</D>")
 styles.ilist = styles.regular:format("<font color='#FFFFFF' size='20'><b>%s</b></font>")
 styles.dialogue = styles.regular:format("<font color='#3F0000' size='15'><b>%s")--</b></font>
+styles.BANG = "<font size='36' color='#%x'><p align='center'><i>!</i></p></font>"
+styles.invshow = styles.regular:format("<font color='#%x' size='18'><p align='center'><b>%s</b></p></font>")
 
 enum.items = {
 	[1] = {
@@ -881,7 +883,7 @@ do
 				},
 				[8] = {
 					{x=283, y=30},
-					{x=238, y=200},
+					{x=283, y=200},
 				},
 				[9] = {
 					{x=249, y=67},
@@ -1403,7 +1405,7 @@ do
 				[17] = {
 					{x=331, y=39},
 					{x=384, y=32},
-					{x=385, y=54},
+					{x=385, y=154},
 				},
 				[18] = {
 					{x=332, y=79},
@@ -1466,7 +1468,7 @@ do
 					{x=28, y=140},
 					{x=139, y=129},
 					{x=126, y=193},
-					{x=96, y=91},
+					{x=96, y=191},
 				},
 				[11] = {
 					{x=82, y=142},

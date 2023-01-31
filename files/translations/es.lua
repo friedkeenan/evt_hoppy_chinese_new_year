@@ -21,7 +21,7 @@ Text["es"] = {
 		}
 	},
 	craft = {
-		instruct = "Has clic en los Objetos para moverlos entre tu Inventario y la Mesa de Trabajo",
+		instruct = "Has clic en los Objetos para moverlos entre tu Inventario y la Mesa de Trabajo.",
 		lamp = "Fabricar Lámpara"
 	},
 	install = "Salta sobre la Aldea e instala la Lámpara que acabas de terminar!",
@@ -44,7 +44,10 @@ Text["es"] = {
 			"¡¡Hola!! ¡Bienvenid(o|a) al Festival del Año Nuevo Chino! Necesito tu ayuda para adornar la Aldea apropiadamente para el Festival!",
 			"¡Necesitamos hacer una gran cantidad de lámparas! Salta por toda la Aldea para encontrar los materiales que necesitamos!"
 		},
-		thanks = {"¡Muchas gracias! ¡No podría haber hecho esto sin tu ayuda! Ahora puedes disfrutar el Festival :D"}
+		thanks = {"¡Muchas gracias! ¡No podría haber hecho esto sin tu ayuda! Ahora puedes disfrutar el Festival :D"},
+		careful_drawing = {"¡Ten cuidado al momento de escribir carácteres chinos! ¡Incluso la más pequeña diferencia puede significar una palabra totalmente distinta!"},
+		psst = "Psst, hola!",
+		retreat = "Ven a verme de nuevo para fabricar una lámpara!"
 	},
 	han = {
 		[1] = {
@@ -100,8 +103,8 @@ Text["es"] = {
 			desc = {"El Jiaozi está hecho de pasta. ¡Se puede rellenar con todo tipo de comida deliciosa!"}
 		},
 		[14] = {
-			name = "Lingotes",
-			desc = {"Los Lingotes son materiales amoldados de cierta manera para facilitar su transporte y procesamiento. ¡Hacen al metal fácil de transportar, guardar y medir!"}
+			name = "Yuanbao",
+			desc = {"¡Yuanbao es una moneda antigua, hecha de plata o de oro y simboliza la riqueza!"}
 		},
 		[15] = {
 			name = "Felicitación de Año Nuevo",
