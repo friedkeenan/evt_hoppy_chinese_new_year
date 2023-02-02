@@ -1954,7 +1954,7 @@ function HanPreview:show(playerName, hanId, xc, yc, lines)
 				y = yc + point.y
 				
 				id1 = tfm.exec.addImage(
-					"185cd3b62c5.png", "!2000", 
+					"185cd3b62c5.png", "!50000", 
 					x, y,
 					playerName,
 					0.25, 0.25,
@@ -1980,7 +1980,7 @@ function HanPreview:show(playerName, hanId, xc, yc, lines)
 					an = math.atan2(previous.y - point.y, previous.x - point.x)
 					
 					id2 = tfm.exec.addImage(
-						"185cd3b163f.png", "!100",
+						"185cd3b163f.png", "!50000",
 						x, y,
 						playerName,
 						sx, 0.25,

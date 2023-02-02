@@ -96,7 +96,7 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 			local id = textAreaId % 10
 			if player.crafting.active then
 				local re = false
-				if player.crafting.size == 3 then
+				if player.crafting.size == 3 and id == 4 then
 					if player.crafting[4].id == 9 then
 						re = true
 						player:initDrawing()
@@ -121,6 +121,12 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 			player:undoDrawingAction()
 		elseif eventName == "draw_tip" then
 			player:newDrawingTip()
+		elseif eventName == "install" then
+			player:placeLamp(player.x, player.y)
+		elseif eventName == "truffle_talk" then
+			if not (player.crafting.active or player.drawing.active or player.interface) then
+				player:talkToNpc(player.x, player.y)
+			end
 		end
 	end
 	
@@ -216,6 +222,24 @@ function eventChatCommand(playerName, message)
 		elseif command == "time" then
 			tfm.exec.setGameTime(args[1], true)
 			answer("Time set to " .. args[1] .. " seconds.")
+		elseif command == "roomlist" then
+			local f = "<font size='9'>%s</font>"--"<a href='event:close'>%s</a>"
+			
+			local tn = math.ceil(#roomList / 32)
+			for i=1, #roomList do
+				roomList[i] = ("<a href='event:a'>%s</a>"):format(roomList[i])
+			end
+			for i=1, tn do
+				ui.addTextArea(
+					760 + i,
+					f:format(table.concat(roomList, "\n", 1 + ((i-1)*32), math.min(i*32, #roomList))),
+					playerName,
+					(i-1)*200, 25,
+					200, 370,
+					0x010101, 0x010101,
+					0.75, true
+				)
+			end
 		end
 	end
 end

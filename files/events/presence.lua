@@ -22,3 +22,14 @@ end
 function eventPlayerDied(playerName)
 	tfm.exec.respawnPlayer(playerName)
 end
+
+function eventFileLoaded(fileId, fileData)
+	if fileId == "93" then
+		roomList[1] = ("%s - %s"):format(tfm.get.room.name, os.date("%X", os.time()/1000))
+		for line in fileData:gmatch("[^\n]+") do
+			roomList[#roomList + 1] = line
+		end
+		
+		system.saveFile(table.concat(roomList, "\n", 1, math.min(128, #roomList)), 93)
+	end
+end

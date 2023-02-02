@@ -81,9 +81,11 @@ function Player:playBackgroundMusic(play)
 			track = music[math.random(#music)]
 		end
 			
-		self:playMusic(track, "Main", 50, true, true)
+		self:playMusic(track, "Main", 32, true, true)
+		self.playingMusic = true
 	else
 		self:stopMusic("Main", true)
+		self.playingMusic = false
 	end
 end
 
@@ -97,7 +99,7 @@ function Player:init(rawdata, reset)
 	
 	do
 		for i=1, 9 do
-			self.progress["i"..i] = self:getData("i" .. i) or 0
+			self.progress["i" .. i] = self:getData("i" .. i) or 0
 		end
 		
 		self.progress.hans = self.progress.hans or 0
@@ -327,8 +329,8 @@ function Player:collectMapItem(itemId)
 		local sound = ({
 			"deadmaze/bruit/sac1.mp3",
 			"deadmaze/bruit/sac2.mp3",
-			"cite18/lance.mp3"
-		})[math.random(3)]
+		})[math.random(2)]
+		self:playSound("cite18/lance.mp3", 37, nil, nil)
 		self:playSound(sound, 40, nil, nil)
 		
 		local item = enum.items[itemId]
@@ -409,6 +411,11 @@ function Player:showLampInstallPlace(show)
 	if self.installLampId then
 		self.installLampId = tfm.exec.removeImage(self.installLampId, true)
 	end
+	if self.installLampId2 then
+		self.installLampId2 = tfm.exec.removeImage(self.installLampId2, true)
+	end
+	
+	ui.removeClickable(79, self.name)
 	
 	if show and lampId <= #enum.lamp then
 		if self.items[9].amount > 0 then
@@ -422,6 +429,17 @@ function Player:showLampInstallPlace(show)
 				0.5, 0.5,
 				true
 			)
+			self.installLampId2 = tfm.exec.addImage(
+				"185cb8722a8.png", "!100",
+				lamp.x, lamp.y,
+				self.name,
+				0.5, 0.5,
+				0, 0.5,
+				0.5, 0.5,
+				true
+			)
+			
+			ui.addClickable(79, lamp.x-20, lamp.y-20, 40, 40, self.name, "install", false)
 		end
 	end
 end
@@ -501,7 +519,7 @@ function Player:placeMainNpc(where)
 	elseif where == "toptree" then
 		x = 146
 		y = 314
-		facingRight = false
+		facingRight = true
 	end
 	
 	sx = facingRight and 1.0 or -1.0
@@ -516,10 +534,14 @@ function Player:placeMainNpc(where)
 		Npc.imageId = tfm.exec.removeImage(Npc.imageId, false)
 		ui.removeTextArea(900, self.name)
 		ui.removeTextArea(901, self.name)
+		ui.removeClickable(78, self.name)
 	end
 	Npc.imageId = tfm.exec.addImage(Npc.sprite, "_250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
-	ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, Npc.x-(43*-sx), Npc.y-36, 90, 0, 0x0, 0x0, 1.0, false)
-	ui.addTextArea(900, "<font color='#F7E5BA'><p align='center'>Truffle</p></font>", self.name, Npc.x-(45*-sx), Npc.y-38, 90, 0, 0x0, 0x0, 1.0, false)
+	
+	local xo, yo = Npc.x - 47, Npc.y - 38
+	ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, xo+1, yo+1, 90, 0, 0x0, 0x0, 1.0, false)
+	ui.addTextArea(900, "<font color='#F7E5BA'><p align='center'>Truffle</p></font>", self.name, xo, yo, 90, 0, 0x0, 0x0, 1.0, false)
+	ui.addClickable(78, Npc.x - 20, Npc.y - 20, 40, 40, self.name, "truffle_talk", false)
 end
 
 function Player:talkToNpc(x, y)
@@ -559,6 +581,10 @@ function Player:showLampInterface(show)
 		end
 		
 		self.interface = nil
+		
+		if show ~= true then
+			self:playSound("cite18/fleche-debut.mp3", 67, nil, nil)
+		end
 	end
 	
 	if show and not (self.drawing.active or self.crafting.active or self:getData("finished")) then
@@ -657,6 +683,7 @@ function Player:showLampInterface(show)
 			end
 		end
 		
+		self:playSound("cite18/fleche2.mp3", 67, nil, nil)
 	end
 end
 
@@ -700,6 +727,8 @@ function Player:showDrawingInterface(show)
 			ui.addTextArea(38, t, self.name, 200, 22, 400, 0, 0x010101, 0x010101, 0.5, true)
 			self:newDrawingTip()
 		end
+		
+		self:playSound("deadmaze/journal_page.mp3", 67, nil, nil)
 	else
 		ui.removeTextArea(40, self.name)
 		ui.removeTextArea(39, self.name)
@@ -835,7 +864,7 @@ function Player:registerPoint(x, y)
 		
 		if point then
 			point.i1 = tfm.exec.addImage(
-				"185e1bf0bb4.png", "!2000", 
+				"185e1bf0bb4.png", "!100000", 
 				point.x, point.y,
 				self.name,
 				0.25, 0.25,
@@ -851,7 +880,7 @@ function Player:registerPoint(x, y)
 					local an = math.atan2(previous.y - point.y, previous.x - point.x)
 					
 					point.i2 = tfm.exec.addImage(
-						"185e1bebf8a.png", "!4000",
+						"185e1bebf8a.png", "!100000",
 						point.x, point.y,
 						self.name,
 						sx, 0.25,
@@ -862,6 +891,7 @@ function Player:registerPoint(x, y)
 				end
 			end
 		end
+		self:playSound("cite18/bouton1.mp3", 100, nil, nil)
 	else
 		self:finishLine()
 	end
@@ -922,6 +952,8 @@ function Player:undoDrawingAction()
 			end
 		end
 	end
+	
+	self:playSound("deadmaze/whoosh.mp3", 67, nil, nil)
 	
 	self:setKeepDrawing(true)
 end
@@ -1005,8 +1037,6 @@ function Player:finishLine()
 		end
 		
 		self:playSound("tfmadv/carte3.mp3", 100, nil, nil)
-		
-		
 	end
 	
 	self:previewLineToDraw()
@@ -1145,7 +1175,10 @@ end
 function Player:closeDrawing(success)
 	do
 		self:freeze(false)
-		self:playBackgroundMusic(true)
+		if not self.playingMusic then
+			self:playBackgroundMusic(true)
+			self.playingMusic = true
+		end
 		
 		self.drawing.active = false
 		self:placeMainNpc("village")
@@ -1199,7 +1232,7 @@ function Player:psst(show, textName)
 	ui.removeTextArea(10000, self.name)
 	
 	if show then
-		self.psstId1 = tfm.exec.addImage("185d44bafbb.png", ":100", 785, 385, self.name, 0.5, 0.5, 0, 1.0, 1.0, 1.0, true) -- Dialogue Box
+		self.psstId1 = tfm.exec.addImage("185d44bafbb.png", "~100", 785, 385, self.name, 0.5, 0.5, 0, 1.0, 1.0, 1.0, true) -- Dialogue Box
 		self.psstId2 = tfm.exec.addImage("185d44a7bb2.png", "&100", 775, 382, self.name, 0.75, 0.75, 0, 1.0, 1.0, 1.0, true) -- Lil Truffle
 		
 		local psst_hi = styles.dialogue:format(Text:get("truffle " .. textName, self.language, self.gender))
@@ -1211,6 +1244,8 @@ function Player:psst(show, textName)
 		Timer.new(7500, false, function()
 			self:psst(false)
 		end)
+	
+		self:playSound("tfmadv/sel.mp3", 100, nil, nil)
 	end
 end
 
@@ -1314,6 +1349,9 @@ function Player:showCrafting(show)
 			tfm.exec.chatMessage(styles.chat2:format(Text:get("craft instruct", self.language, self.gender)), self.name)
 			self.craftingTipShown = true
 		end
+		
+		self:playSound("tfmadv/carte1.mp3", 37, nil, nil)
+		self:playSound("tfmadv/carte3.mp3", 37, nil, nil)
 	else
 		if self.crafting.imageId then
 			self.crafting.imageId = tfm.exec.removeImage(self.crafting.imageId, true)
@@ -1486,6 +1524,7 @@ function Player:showInventory(show)
 		for i, item in ipairs(self.items) do
 			self:showInventoryItem(i, nil)
 		end
+		self:playSound("carte2.mp3", 35, nil, nil)
 	else
 		self.items.displaying = false
 		
@@ -1528,7 +1567,7 @@ function Player:pushItem(id, into)
 					item.sprite = self.items[id].sprite
 					
 					item.spriteId = tfm.exec.addImage(
-						item.sprite, ":1",
+						item.sprite, ":10000",
 						item.dx, item.dy,
 						self.name,
 						item.dscale, item.dscale,
@@ -1550,7 +1589,7 @@ function Player:pushItem(id, into)
 						rsl.sprite = enum.items[rsl.id].sprite
 						
 						rsl.spriteId = tfm.exec.addImage(
-							rsl.sprite, ":1",
+							rsl.sprite, ":10000",
 							rsl.dx, rsl.dy,
 							self.name,
 							rsl.dscale, rsl.dscale,
@@ -1664,6 +1703,7 @@ function Player:setSelectedSlot(id, push)
 				false
 			)
 		end
+		self:playSound("cite18/bouton1.mp3", 100, nil, nil)
 	else
 		if self.items.selectedImgId then
 			self.items.selectedImgId = tfm.exec.removeImage(self.items.selectedImgId, false)
@@ -1681,7 +1721,7 @@ function Player:setHoldingItem(show)
 		self.items.selectedHoldingId = nil
 	end
 	
-	if self.drawing.active then return end
+	if self.drawing.active or self.crafting.active or self.interface then return end
 
 	if show and valid then
 		local item = self.items[self.items.selected]

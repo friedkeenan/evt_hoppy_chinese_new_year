@@ -15,6 +15,8 @@ do
 			end, interval, true)
 		end, interval + (diftime * i), false)
 	end
+	
+	system.loadFile(93)
 end
 
 tfm.exec.newGame(xml, false)

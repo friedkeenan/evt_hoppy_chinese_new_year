@@ -12,6 +12,8 @@ local system = system
 local tfm = tfm
 local ui = ui
 
+local roomList = {}
+
 local debug = debug
 local math = math
 local os = os

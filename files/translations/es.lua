@@ -59,7 +59,7 @@ Text["es"] = {
 			desc = {"¡El Horóscopo Chino asigna animals y sus atributos cada año en un ciclo de doce años!"}
 		},
 		[3] = {
-			name = "Firotecnia",
+			name = "Pirotecnia",
 			desc = {"La Pirotecnia es súper ruidosa y tiene una mecha muy corta. ¡No la haría enojar si fuese tú!"}
 		},
 		[4] = {
