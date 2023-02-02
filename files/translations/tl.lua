@@ -44,7 +44,10 @@ Text["tl"] = {
 			"Kamusta!! Maligayang pagdating sa pagdiriwang ng bagong taon ng Tsino! Kailangan ko ang iyong tulong upang palamutihan nang maayos ang nayon para sa pagdiriwang!",
 			"Kailangan nating gumawa ng madaming lampara! Tumalon-talon at galugarin ang nayon upang mahanap ang mga materyales na kailangan natin!",
 		},
-		thanks = {"Maraming salamat! Hindi ko magagawa ito kung wala ka! Magsaya sa pagdiriwang :D"}
+		thanks = {"Maraming salamat! Hindi ko magagawa ito kung wala ka! Magsaya sa pagdiriwang :D"},
+		careful_drawing = {"Mag-ingat sa pagsusulat ng karakter na Tsino! Kahit na ang maliit na pagkakaiba ay maaaring baybayin ang ganap na naiibang salita!"},
+		psst = "Psst, kamusta!",
+		retreat = "Bumalik ka upang makita mo akong gumawa ng lampara!"
 	},
 	han = {
 		[1] = {

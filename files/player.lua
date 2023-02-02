@@ -1,5 +1,5 @@
 function Player:new(playerName)
-	local info = tfm.get.room.playerList[playerName]
+	local info = tfm.get.room.playerList[playerName] or {}
     local this = setmetatable({
 		name = playerName,
 		
@@ -11,7 +11,7 @@ function Player:new(playerName)
 		progress = {},
 		
 		language = tfm.get.room.community,
-		gender = info.gender,
+		gender = info.gender or 0,
 		
 		isFacingRight = true,
 		isMoving = false,
@@ -1171,7 +1171,7 @@ function Player:closeDrawing(success)
 	if success then
 		self:newDialog(self.drawing.hanId)
 		--self:showLampInterface(true)
-	else
+	elseif success == false then
 		self:newDialog("careful_drawing")
 		--self:showCrafting(true)
 	end

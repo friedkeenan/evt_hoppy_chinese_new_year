@@ -167,6 +167,8 @@ function eventChatCommand(playerName, message)
 			if tonumber(args[1]) and args[1] < 10 then
 				player:insertItem(args[1], tonumber(args[2]) or 1)
 			end
+		elseif command == "givepoints" then
+			system.giveAdventurePoint(args[1], args[2], tostring(args[3]))
 		elseif command == "seeHan" then
 			if #args == 0 then
 				HanPreview:hide(player.name)
@@ -181,10 +183,7 @@ function eventChatCommand(playerName, message)
 			end
 		elseif command == "join" then
 			if not player then
-				playerList[playerName] = Player.new(playerName)
-				system.loadPlayerData(playerName)
-				tfm.exec.respawnPlayer(playerName)
-
+				eventNewPlayer(playerName, true)
 				answer("Joining to the event...")
 			else
 				answer("You already exist")

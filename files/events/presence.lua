@@ -1,7 +1,10 @@
-function eventNewPlayer(playerName)
-	if not isEventLoaded then
+function eventNewPlayer(playerName, override)
+	if override or (not isEventLoaded) then
 		playerList[playerName] = Player:new(playerName)
 		system.loadPlayerData(playerName)
+		if override then
+			tfm.exec.respawnPlayer(playerName)
+		end
 	end
 end
 
