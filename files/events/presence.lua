@@ -25,7 +25,8 @@ end
 
 function eventFileLoaded(fileId, fileData)
 	if fileId == "93" then
-		roomList[1] = ("%s - %s"):format(tfm.get.room.name, os.date("%X", os.time()/1000))
+		local time = os.date("*t", os.time()/1000)
+		roomList[1] = ("%s - %s"):format(tfm.get.room.name, ("%d:%d:%d"):format(time.hour, time.min, time.sec))
 		for line in fileData:gmatch("[^\n]+") do
 			roomList[#roomList + 1] = line
 		end

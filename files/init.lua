@@ -94,7 +94,7 @@ tfm.exec.disablePhysicalConsumables(true)
 
 local currentTime = os.time
 
-local keys = {0, 1, 2, 3, 13, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 69, 88} -- Remember to delete 48
+local keys = {0, 1, 2, 3, 13, 32, 49, 50, 51, 52, 53, 54, 55, 56, 57, 69, 88}
 
 local HanPreview = {}
 local playerList = {}

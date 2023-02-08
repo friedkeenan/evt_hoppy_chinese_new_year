@@ -22,8 +22,6 @@ function eventKeyboard(playerName, key, down, x, y, vx, vy)
 		player.ef = nil
 	end
 	
-	
-	
 	if down then
 		if player.onDialog then
 			if key == 32 then
@@ -104,10 +102,16 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 				end
 			
 				if not re then
+					local old
+					if player.crafting.size == 5 then
+						old = player.crafting[6].id
+					end
 					player:pushItem(id, false)
 					if id == player.crafting.size + 1 and player.crafting.size == 5 then
-						player:closeCrafting()
-						player:showLampInterface(true)
+						if old == 8 then
+							player:closeCrafting()
+							player:showLampInterface(true)
+						end
 					end
 				end
 			end
@@ -130,8 +134,13 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 		end
 	end
 	
-	if eventName == "close" then
-		ui.removeTextArea(textAreaId, playerName)
+	if eventCommand == "n" then
+		for i=1, #args do
+			args[i] = tostring(args[i])
+		end
+		args = table.concat(args, "-")
+		local roomName, time = args:match("^(.-) %- (%d+:%d+:%d+)$")
+		tfm.exec.chatMessage(("<J>Room:</J> <V>%s</V> - %s"):format(roomName, time), playerName)
 	end
 end
  
@@ -223,29 +232,41 @@ function eventChatCommand(playerName, message)
 			tfm.exec.setGameTime(args[1], true)
 			answer("Time set to " .. args[1] .. " seconds.")
 		elseif command == "roomlist" then
-			local f = "<font size='9'>%s</font>"--"<a href='event:close'>%s</a>"
-			
-			local tn = math.ceil(#roomList / 32)
-			for i=1, #roomList do
-				roomList[i] = ("<a href='event:a'>%s</a>"):format(roomList[i])
+			for i=1, #args do
+				args[i] = tostring(args[i])
 			end
-			for i=1, tn do
-				ui.addTextArea(
-					760 + i,
-					f:format(table.concat(roomList, "\n", 1 + ((i-1)*32), math.min(i*32, #roomList))),
-					playerName,
-					(i-1)*200, 25,
-					200, 370,
-					0x010101, 0x010101,
-					0.75, true
-				)
+			args = #args > 0 and table.concat(args, " ") or ""
+			
+			for i=1, 10 do
+				ui.removeTextArea(760 + i, playerName)
+			end
+			if args ~= "close" then
+				local f = "<font size='9'>%s"--"<a href='event:close'>%s</a>"
+				local pattern = (args == "") and "." or args
+				local v = {}
+				for i=1, #roomList do
+					if roomList[i]:match(pattern) then
+						v[#v + 1] = ("<a href='event:n-%s'>%s</a>"):format(roomList[i], roomList[i])
+					end
+				end
+				local tn = math.ceil(math.min(#v, 128) / 26)
+				for i=1, tn do
+					ui.addTextArea(
+						760 + i,
+						f:format(table.concat(v, "\n", 1 + ((i-1)*26), math.min(i*26, #v))),
+						playerName,
+						(i-1)*160, 25,
+						160, 370,
+						0x010101, 0x010101,
+						0.75, true
+					)
+				end
 			end
 		end
 	end
 end
 
 function eventTalkToNPC(playerName, npcName)
-	--tfm.exec.chatMessage(("%s &gt; %s"):format(playerName, npcName))
 	system.openEventShop("evt_hoppy_cny", playerName)
 end
 

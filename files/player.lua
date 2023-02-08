@@ -74,12 +74,7 @@ function Player:playBackgroundMusic(play)
 			"cite18/musique/museum2.mp3"
 		}
 		
-		local track
-		if self:getData("finished") then
-			track = music[1]
-		else
-			track = music[math.random(#music)]
-		end
+		local track = music[math.random(#music)]
 			
 		self:playMusic(track, "Main", 32, true, true)
 		self.playingMusic = true
@@ -111,7 +106,7 @@ function Player:init(rawdata, reset)
 	self:initInventory()
 	
 	tfm.exec.addNPC("Mirko", {
-		title = 468,--228,
+		title = 468,
 		look = "210;23_FFFFFF+FFFFFF+FFFFFF,0,11_FFFFFF+FFFFFF,45,69_10101+F9FFFF+C7BFB9+C7BFB9+C7BFB9+C7BFB9+C7BFB9+C7BFB9+FFEFD8+FFEFD8,49_FFFFFF+FFFFFF+FFFFFF+FFFFFF,0,23,0",
 		x = 311,
 		y = 844,
@@ -229,7 +224,6 @@ function Player:setForeground(display, color, alpha, uiLayer)
 		end
 
 		ui.addTextArea(9696, "", self.name, x, y, w, h, color, color, alpha, uiLayer)
-		--self:setMute(self.ambienceMuted,true)
 	else
 		ui.removeTextArea(9696, self.name)
 	end
@@ -260,26 +254,13 @@ function Player:updatePosition(x, y, vx, vy, facingRight, isMoving)
 	end
 end
 
-function Player:handleNear(x, y, vx, vy)
-	--[[if x > 700 and x < 1000 then -- To do: change
-		ui.addClickable(1, 700, 150, 300, 50, self.name, "craftable", false)
-	else
-		ui.removeClickable(1, self.name)
-	end
-	
-	if (x > 0 and x < 175) and y < 150 then -- To do: change
-		ui.addClickable(2, 25, 50, 150, 50, self.name, "items", false)
-	else
-		ui.removeClickable(2, self.name)
-	end]]
-	
+function Player:handleNear(x, y, vx, vy)	
 	if self.onDialog and math.pythag(x, y, self.Npc.x, self.Npc.y) > 75 then
 		self:closeDialog()
 	end
 end
 
 function Player:setMapItems(set)
-	
 	if set then
 		self.mapItems = {}
 		
@@ -316,16 +297,18 @@ function Player:collectMapItem(itemId)
 		self:insertItem(itemId, 1)
 		system.giveAdventurePoint(self.name, "evt_hoppy_cny_materials", "1")
 		
+		-- Graphic Effects
 		
 		tfm.exec.removeBonus(100 + itemId, self.name)
 		if mi.imageId then
 			mi.imageId = tfm.exec.removeImage(mi.imageId, false)
 		end
 		
-		
 		for i=1, math.random(4, 6) do
 			tfm.exec.displayParticle(tfm.enum.particle.cloud, mi.x, mi.y, math.random(-10, 10)/10, math.random(-10,10)/10, 0, 0, self.name)
 		end
+		
+		-- Sound
 		local sound = ({
 			"deadmaze/bruit/sac1.mp3",
 			"deadmaze/bruit/sac2.mp3",
@@ -335,12 +318,14 @@ function Player:collectMapItem(itemId)
 		
 		local item = enum.items[itemId]
 		
+		-- New sprite
 		mi.imageId = tfm.exec.addImage(item.sprite, "_50", mi.x, mi.y, self.name, 0.375, 0.375, 0, 0.33, 0.5, 0.5, false)
 		
 		self:setHoldingItem(true)
 		
 		mi.active = false
 		
+		-- Truffle Window
 		local pending = false
 		for i=1, 7 do
 			if self.mapItems[i] and self.mapItems[i].active then
@@ -357,7 +342,6 @@ function Player:collectMapItem(itemId)
 end
 
 function Player:setLampsDisplay(display)
-	
 	if type(display) == "number" then
 		if self.lampsIds[display] then
 			tfm.exec.removeImage(self.lampsIds[display], false)
@@ -465,9 +449,8 @@ function Player:placeLamp(x, y)
 			system.giveAdventurePoint(self.name, "evt_hoppy_cny_installed", "1")
 			system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
 			
-			
-			
 			self:setLampsDisplay(lampId)
+			
 			do
 				self:playSound("cite18/fleche4.mp3", 55, nil, nil)
 				self:playSound("cite18/flamme.mp3", 55, nil, nil)
@@ -478,13 +461,13 @@ function Player:placeLamp(x, y)
 					tfm.exec.displayParticle(pr[math.random(#pr)], lamp.x, lamp.y, e, -1.7, -e/20, math.random(20, 35)/100, self.name)
 				end
 			end
+			
 			self:showLampInstallPlace(true)
 			
-			if lampId % 4 == 0 then
+			if lampId % 4 == 0 then -- every 4 lamps give pencils
 				local ccid = math.ceil(lampId / 4)
 				tfm.exec.giveConsumables(self.name, pencil_ids[ccid], 5)
 			end
-			
 			
 			if lampId == #enum.lamp then
 				self:finishEvent()
@@ -506,7 +489,8 @@ end
 function Player:placeMainNpc(where)
 	local Npc = self.Npc
 	local x, y, facingRight
-	local sx
+	local sx -- scale X
+	
 	if where == "village" then
 		x = 1150
 		y = 388
@@ -514,11 +498,11 @@ function Player:placeMainNpc(where)
 	elseif where == "entrance" or not where then
 		where = "entrance"
 		x = 553
-		y = 832
+		y = 827
 		facingRight = false
 	elseif where == "toptree" then
 		x = 146
-		y = 314
+		y = 313
 		facingRight = true
 	end
 	
@@ -536,7 +520,7 @@ function Player:placeMainNpc(where)
 		ui.removeTextArea(901, self.name)
 		ui.removeClickable(78, self.name)
 	end
-	Npc.imageId = tfm.exec.addImage(Npc.sprite, "_250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
+	Npc.imageId = tfm.exec.addImage(Npc.sprite, "!250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
 	
 	local xo, yo = Npc.x - 47, Npc.y - 38
 	ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, xo+1, yo+1, 90, 0, 0x0, 0x0, 1.0, false)
@@ -590,8 +574,11 @@ function Player:showLampInterface(show)
 	if show and not (self.drawing.active or self.crafting.active or self:getData("finished")) then
 		self.interface = {{items={}}, {items={}}}
 		self.interface.mainId = tfm.exec.addImage("185e3742fcc.png", ":50", 400, 210, self.name, 0.95, 0.95, 0, 1.0, 0.5, 0.5, true)
-		-- +- 170
+		
 		local rr
+		
+		-- Maybe this could have been done better in another way, but the moment I wrote it,
+		-- I was rushing some code. It works without flaws, so if it isn't broken, don't fix it !
 		do -- 1
 			self.interface[1].iconId = tfm.exec.addImage(
 				enum.items.lamp.sprite, ":70",
@@ -697,8 +684,8 @@ function Player:showDrawingInterface(show)
 		self:hideOffscreen(true, 0x010101)
 		
 		local x, y = self:getUiCenterFromMap()
-		self.drawing.coverId = tfm.exec.addImage("185e3747cb8.png", "!1000", x, y-7, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)
-		self.drawing.canvasId = tfm.exec.addImage("185e50f1e58.png", "!1020", x, y, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true)		
+		self.drawing.coverId = tfm.exec.addImage("185e3747cb8.png", "!1000", x, y-7, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true) -- Wood behind
+		self.drawing.canvasId = tfm.exec.addImage("185e50f1e58.png", "!1020", x, y, self.name, 1.0, 1.0, 0, 1.0, 0.5, 0.5, true) -- Huge lamp
 		
 		do
 			local text = {
@@ -710,7 +697,7 @@ function Player:showDrawingInterface(show)
 			
 			local y = 185
 			
-			ui.addTextArea(40, text, self.name, 660, y, 120, 200, 0x0, 0x0, 1.0, true)
+			ui.addTextArea(40, text, self.name, 640, y, 160, 200, 0x0, 0x0, 1.0, true)
 			self.drawing.interfaceId = tfm.exec.addImage("185e3742fcc.png", ":20", 715, y+29, self.name, 0.1, 0.4, math.rad(90), 1.0, 0.5, 0.5, true)
 			
 			self.drawing.tipId = 0
@@ -776,7 +763,7 @@ function Player:setKeepDrawing(set)
 	if set == nil then
 		set = not self.drawing.keep_drawing
 	else
-		set = set--self.drawing.keep_drawing
+		set = set
 	end
 	
 	if self.drawing.keepDrawingId then
@@ -838,11 +825,11 @@ function Player:getUiCenterFromMap(x, y)
 end
 
 function Player:registerPoint(x, y)
+	if self.drawing.finished then return end
+	
 	local drawing = self.drawing
-	if drawing.finished then return end
 	local count = drawing.consecutive_points
 	local index = #drawing.points + 1
-	
 	
 	if count == 0 then
 		self:startLine()
@@ -891,6 +878,7 @@ function Player:registerPoint(x, y)
 				end
 			end
 		end
+		
 		self:playSound("cite18/bouton1.mp3", 100, nil, nil)
 	else
 		self:finishLine()
@@ -906,7 +894,6 @@ end
 function Player:startLine()
 	self:setKeepDrawing(true)
 	self:playSound("deadmaze/objectif2.mp3", 100, nil, nil)
-	--self:previewLineToDraw()
 end
 
 function Player:undoDrawingAction()
@@ -914,10 +901,6 @@ function Player:undoDrawingAction()
 	
 	if drawing.consecutive_points > 0 then
 		self:removePoint(-1)
-		--[[if drawing.consecutive_points == 1 then
-			self:registerPoint(0, 0)
-			self:finishLine()
-		end]]
 	else
 		local line = drawing.lines[#drawing.lines]
 		if line then
@@ -941,7 +924,7 @@ function Player:undoDrawingAction()
 			
 			if #drawing.lines ~= manual_count then
 				self:closeDrawing()
-				tfm.exec.chatMessage("Canvas Error")
+				tfm.exec.chatMessage("Canvas Error", self.name)
 			else
 				if #drawing.lines == 0 then
 					for i=1, #drawing.points do
@@ -1089,7 +1072,7 @@ end
 function Player:drawingSuccess()
 	if self.crafting.active and self.crafting.size == 3 and self.drawing.active then
 		self:setData("hans", self.drawing.hanId, true)
-		self:pushItem(4, false) -- self:insertItem(9, 1)
+		self:pushItem(4, false)
 		system.giveAdventurePoint(self.name, "evt_hoppy_cny_drawn", "1")
 		system.giveEventGift(self.name, "evt_hoppy_cny_golden_ticket_1")
 		self:playSound("deadmaze/niveau/gain_niveau.mp3", 100, nil, nil)
@@ -1184,8 +1167,6 @@ function Player:closeDrawing(success)
 		self:placeMainNpc("village")
 	end
 	
-	-- Remove line images, to do
-	
 	for index, point in next, self.drawing.points do
 		if point.i1 then tfm.exec.removeImage(point.i1, false) end
 		if point.i2 then tfm.exec.removeImage(point.i2, false) end
@@ -1203,10 +1184,8 @@ function Player:closeDrawing(success)
 	self:closeCrafting()
 	if success then
 		self:newDialog(self.drawing.hanId)
-		--self:showLampInterface(true)
 	elseif success == false then
 		self:newDialog("careful_drawing")
-		--self:showCrafting(true)
 	end
 end
 
@@ -1673,9 +1652,9 @@ function Player:setSelectedSlot(id, push)
 				end
 				
 				local itemName = Text:get("items " .. enum.items[self.items.selected].name, self.language, self.gender)
-				local x, y = 300, 305
-				ui.addTextArea(369, styles.invshow:format(0x010101, itemName), self.name, x + 1, y + 1, 200, 0, 0x0, 0x0, 1.0, true)
-				ui.addTextArea(370, styles.invshow:format(0xF2C868, itemName), self.name, x, y, 200, 0, 0x0, 0x0, 1.0, true)
+				local x, y = 225, 305
+				ui.addTextArea(369, styles.invshow:format(0x010101, itemName), self.name, x + 1, y + 1, 350, 0, 0x0, 0x0, 1.0, true)
+				ui.addTextArea(370, styles.invshow:format(0xF2C868, itemName), self.name, x, y, 350, 0, 0x0, 0x0, 1.0, true)
 				
 				self.items.textDescTimer = Timer.new(2000, false, function()
 					ui.removeTextArea(369, self.name)
@@ -1798,16 +1777,6 @@ function Player:convertRecipe(recipe)
 	end
 
 	return nil
-end
-
-function Player:displayRecipe(r, display, callback)
-	r = self:convertRecipe(r)
-	
-	-- ...
-end
-
-function Player:hideRecipe(r)
-	-- ...
 end
 
 function Player:assertRecipe(recipe, onInv)
