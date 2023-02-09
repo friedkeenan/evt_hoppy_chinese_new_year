@@ -1080,6 +1080,7 @@ function Player:drawingSuccess()
 end
 
 function Player:finishDrawing()
+	if self.drawing.finished then return end
 	local han = enum.han[self.drawing.hanId]
 	
 	self:finishLine()
