@@ -1070,6 +1070,7 @@ function Player:correctDrawing(han) -- Regulate drawing: scale, pos
 end
 
 function Player:drawingSuccess()
+	if self.drawing.finished then return end
 	if self.crafting.active and self.crafting.size == 3 and self.drawing.active then
 		self:setData("hans", self.drawing.hanId, true)
 		self:pushItem(4, false)
