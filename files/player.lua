@@ -120,6 +120,7 @@ function Player:init(rawdata, reset)
 	
 	if self:getData("finished") then		
 		self:placeMainNpc("toptree")
+		-- tfm.exec.giveConsumables(self.name, "", 10) -- GIVE TRUFFLE
 	else
 		self:setMapItems(true)
 		self:showLampInstallPlace(true)
@@ -490,7 +491,7 @@ function Player:placeMainNpc(where)
 	local Npc = self.Npc
 	local x, y, facingRight
 	local sx -- scale X
-	
+	local shouldPlace = true
 	if where == "village" then
 		x = 1150
 		y = 388
@@ -504,6 +505,7 @@ function Player:placeMainNpc(where)
 		x = 146
 		y = 313
 		facingRight = true
+		shouldPlace = false
 	end
 	
 	sx = facingRight and 1.0 or -1.0
@@ -520,12 +522,25 @@ function Player:placeMainNpc(where)
 		ui.removeTextArea(901, self.name)
 		ui.removeClickable(78, self.name)
 	end
-	Npc.imageId = tfm.exec.addImage(Npc.sprite, "!250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
 	
-	local xo, yo = Npc.x - 47, Npc.y - 38
-	ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, xo+1, yo+1, 90, 0, 0x0, 0x0, 1.0, false)
-	ui.addTextArea(900, "<font color='#F7E5BA'><p align='center'>Truffle</p></font>", self.name, xo, yo, 90, 0, 0x0, 0x0, 1.0, false)
-	ui.addClickable(78, Npc.x - 20, Npc.y - 20, 40, 40, self.name, "truffle_talk", false)
+	if shouldPlace then
+		Npc.imageId = tfm.exec.addImage(Npc.sprite, "!250", Npc.x, Npc.y, self.name, sx, 1.0, 0, 1.0, 0.5*sx, 0.5, false)
+		
+		local xo, yo = Npc.x - 47, Npc.y - 38
+		ui.addTextArea(901, "<font color='#000000'><p align='center'>Truffle</p></font>", self.name, xo+1, yo+1, 90, 0, 0x0, 0x0, 1.0, false)
+		ui.addTextArea(900, "<font color='#F7E5BA'><p align='center'>Truffle</p></font>", self.name, xo, yo, 90, 0, 0x0, 0x0, 1.0, false)
+		ui.addClickable(78, Npc.x - 20, Npc.y - 20, 40, 40, self.name, "truffle_talk", false)
+	else
+		tfm.exec.addNPC("Truffle", {
+			title = 228,
+			look = "263;0,0,0,0,0,0,0,0,0",
+			x = Npc.x,
+			y = Npc.y,
+			female = false,
+			lookLeft = true,
+			interactive = true
+		})
+	end
 end
 
 function Player:talkToNpc(x, y)

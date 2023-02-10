@@ -267,7 +267,14 @@ function eventChatCommand(playerName, message)
 end
 
 function eventTalkToNPC(playerName, npcName)
-	system.openEventShop("evt_hoppy_cny", playerName)
+	if npcName == "Mirko" then
+		system.openEventShop("evt_hoppy_cny", playerName)
+	elseif npcName == "Truffle" then
+		local player = playerList[playerName]
+		if player then
+			player:talkToNpc(player.x, player.y)
+		end
+	end
 end
 
 function eventPlayerBonusGrabbed(playerName, bonusId)
