@@ -117,7 +117,7 @@ function eventTextAreaCallback(textAreaId, playerName, eventName)
 			end
 		elseif eventName == "craft_a_lamp" then
 			player:setCrafting(5)
-		elseif eventName == "craft_a_lamp_draw" then
+		elseif eventName == "craft_a_lamp_draw" and player:getData("hans") < 24 then
 			player:setCrafting(3)
 		elseif eventName == "draw_send" then
 			player:finishDrawing()

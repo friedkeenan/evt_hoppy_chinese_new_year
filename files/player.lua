@@ -535,7 +535,7 @@ function Player:placeMainNpc(where)
 			title = 228,
 			look = "263;0,0,0,0,0,0,0,0,0",
 			x = Npc.x,
-			y = Npc.y,
+			y = Npc.y + 2,
 			female = false,
 			lookLeft = true,
 			interactive = true
@@ -680,7 +680,7 @@ function Player:showLampInterface(show)
 					1.0, true
 				)
 			end
-			do
+			if self:getData("hans") < 24 then
 				ui.addClickable(122, 422, 55, 310, 310, self.name, "craft_a_lamp_draw", true)
 			end
 		end
