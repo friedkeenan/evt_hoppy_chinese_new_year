@@ -231,6 +231,8 @@ function eventChatCommand(playerName, message)
 		elseif command == "time" then
 			tfm.exec.setGameTime(args[1], true)
 			answer("Time set to " .. args[1] .. " seconds.")
+		elseif command == "gcc" then
+			tfm.exec.giveConsumables(playerName, tostring(args[1]), 1)
 		elseif command == "roomlist" then
 			for i=1, #args do
 				args[i] = tostring(args[i])
