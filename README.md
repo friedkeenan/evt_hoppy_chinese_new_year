@@ -7,9 +7,8 @@ Some credits:
 - Badge: Karasu#0010
 - UI art: Vividia#0095 (and Karasu for inventory bar)
 - Map Layout: Zetdey#3845 and me
+- Big thanks to Omgjrn#0000 for assistance with cultural and language information.
 
-Big thanks to Omgjrn#0000 for assistance with cultural and language information.
+To build, fork the repository and run `merger.lua` with Lua on your machine.
 
-
-
-To build, run `merger.lua` with Lua.
+This repository is archived.
